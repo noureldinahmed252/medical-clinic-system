@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://tweakcn.com/live-preview.min.js"></script>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="loginPage" class="auth-page">
+        <button class="theme-toggle-auth" onclick="toggleTheme()">
+            <span id="themeIconAuth">🌙</span>
+        </button>
+        
+        <div class="auth-container">
+            <div class="auth-logo">
+                <div class="auth-logo-icon">🏥</div>
+                <h1>Clinic Management System</h1>
+                <p>Sign in to continue to your dashboard</p>
+            </div>
+            
+            <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="loginEmail" placeholder="doctor@clinic.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="auth-btn">Sign In</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Don't have an account? <span class="auth-link" onclick="showSignup()">Create Account</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signupPage" class="auth-page hidden">
+        <button class="theme-toggle-auth" onclick="toggleTheme()">
+            <span id="themeIconAuth2">🌙</span>
+        </button>
+        
+        <div class="auth-container signup-container">
+            <div class="auth-logo">
+                <div class="auth-logo-icon" id="signupIconLogo">👨‍⚕️</div>
+                <h1 id="signupTitle">Doctor Registration</h1>
+                <p id="signupSubtitle">Create your account and start managing your clinic</p>
+            </div>
+            
+            <form class="auth-form" id="signupForm" onsubmit="handleDoctorSignup(event)">
+                    <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 18px; font-weight: 600;">Personal Information</h3>
+                    
+                    <!-- Profile Photo Upload Section - Compact -->
+                    <div class="form-group photo-group">
+                        <label class="form-label">📷 Profile Photo *</label>
+                        <div class="photo-upload-compact">
+                            <!-- Photo Preview -->
+                            <div class="photo-preview-compact" id="photoPreview">
+                                <span style="font-size: 32px;">📷</span>
+                            </div>
+                            
+                            <!-- Upload Button -->
+                            <button type="button" class="photo-upload-btn" id="photoUploadArea" title="Click to upload profile photo">
+                                Choose Photo
+                            </button>
+                            
+                            <input 
+                                type="file" 
+                                id="signupPhoto" 
+                                name="photo"
+                                class="photo-input" 
+                                accept="image/*"
+                                style="display: none;">
+                        </div>
+                        <div class="photo-status" id="photoStatus" style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
+                            No photo selected
+                        </div>
+                    </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="signupName" placeholder="Dr. John Smith" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" class="form-input" id="signupEmail" placeholder="doctor@clinic.com" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-input" id="signupPassword" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-input" id="signupPhone" placeholder="+20 123 456 7890" required>
+                    </div>
+                    <div class="form-group">
+  <label class="form-label">Governorate *</label>
+    <select class="form-select" id="signupGovernorate" required>
+    <option value="">-- Select Governorate --</option>
+    <option value="Cairo">Cairo</option>
+    <option value="Alexandria">Alexandria</option>
+    <option value="Giza">Giza</option>
+    <option value="Aswan">Aswan</option>
+    <option value="Asyut">Asyut</option>
+    <option value="Beheira">Beheira</option>
+    <option value="Beni Suef">Beni Suef</option>
+    <option value="Dakahlia">Dakahlia</option>
+    <option value="Damietta">Damietta</option>
+    <option value="Faiyum">Faiyum</option>
+    <option value="Gharbia">Gharbia</option>
+    <option value="Ismailia">Ismailia</option>
+    <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+    <option value="Luxor">Luxor</option>
+    <option value="Matrouh">Matrouh</option>
+    <option value="Minya">Minya</option>
+    <option value="Monufia">Monufia</option>
+    <option value="New Valley">New Valley</option>
+    <option value="North Sinai">North Sinai</option>
+    <option value="Port Said">Port Said</option>
+    <option value="Qalyubia">Qalyubia</option>
+    <option value="Qena">Qena</option>
+    <option value="Red Sea">Red Sea</option>
+    <option value="Sharqia">Sharqia</option>
+    <option value="Sohag">Sohag</option>
+    <option value="South Sinai">South Sinai</option>
+    <option value="Suez">Suez</option>
+    </select>
+</div>
+
+                </div>
+                
+                <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 18px; font-weight: 600;">Professional Details</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Medical Specialty *</label><select class="form-select" id="signupSpecialty" required> <option value="">-- Select Specialty --</option>                            <option value="Vaccination">Vaccination</option>\n                            <option value="Dermatology">Dermatology</option>\n                            <option value="Psychiatry">Psychiatry</option>\n                            <option value="Pediatrics">Pediatrics</option>\n                            <option value="Orthopedics">Orthopedics</option>\n                            <option value="General Surgery">General Surgery</option>\n                            <option value="Dentistry">Dentistry</option>\n                            <option value="Obstetrics">Obstetrics</option>\n                            <option value="Gynecology">Gynecology</option>\n                            <option value="Fertility">Fertility</option>\n                            <option value="Plastic Surgery">Plastic Surgery</option>\n                            <option value="Newborn Care">Newborn Care</option>\n                        </select>                 </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">University Certificate *</label>
+                        <input 
+                        type="text" 
+                        class="form-input" 
+                        id="signupCertificate" 
+                        placeholder="e.g., Bachelor of Medicine - Cairo University" 
+                        required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                <label class="form-label">National ID Number *</label>
+                    <input 
+                    type="text" 
+                    class="form-input" 
+                    id="signupNationalId" 
+                    placeholder="Enter 14-digit National ID" 
+                    required
+                    maxlength="14"
+                    >
+                    </div>
+            <script>
+            const nationalIdInput = document.getElementById("signupNationalId");
+
+            nationalIdInput.addEventListener("input", () => {
+            // يشيل أي حاجة مش رقم
+            nationalIdInput.value = nationalIdInput.value.replace(/\D/g, "");
+
+            // يوقف عند 14 رقم
+            if (nationalIdInput.value.length > 14) {
+                nationalIdInput.value = nationalIdInput.value.slice(0, 14);
+            }
+            });
+            </script>
+
+                    
+                    <div class="form-group">
+                        <label class="form-label">Medical Syndicate ID *</label>
+                        <input type="text" class="form-input" id="signupLicense" placeholder="MS-12345678" required>
+                    </div>
+                    
+                    
+                </div>
+                
+                <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 18px; font-weight: 600;">Clinic Information</h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Clinic Name *</label>
+                        <input type="text" class="form-input" id="signupClinicName" placeholder="Heart Care Clinic" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Clinic Phone *</label>
+                        <input type="tel" class="form-input" id="signupClinicPhone" placeholder="+20 123 456 7890" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Clinic Address *</label>
+                    <input type="text" class="form-input" id="signupClinicAddress" placeholder="123 Medical Street, Cairo, Egypt" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Clinic Email</label>
+                    <input type="email" class="form-input" id="signupClinicEmail" placeholder="info@clinic.com">
+                </div>
+                
+                <button type="submit" class="auth-btn">Create Account</button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <span class="auth-link" onclick="showLogin()">Sign In</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-brand">
+                    <span>🏥</span>
+                    <span>Clinic Management</span>
+                </div>
+                <div class="nav-menu">
+                    <button class="nav-btn active" onclick="showPage('dashboard')">
+                        <span>📊</span> Dashboard
+                    </button>
+                    <button class="nav-btn" onclick="showPage('calendar')">
+                        <span>📅</span> Calendar
+                    </button>
+                    <button class="nav-btn" onclick="showPage('patients')">
+                        <span>👥</span> Patients
+                    </button>
+                    <button class="nav-btn" onclick="showPage('profile')">
+                        <span>👤</span> Profile
+                    </button>
+                    <button class="nav-btn" onclick="toggleTheme()">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <button class="nav-btn" onclick="logout()">
+                        <span>🚪</span> Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>📊</span>
+                        Dashboard
+                    </h1>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="showAddAppointmentModal()">
+                            <span>➕</span> New Appointment
+                        </button>
+                        <button class="btn btn-success" onclick="showAddPatientModal()">
+                            <span>👤</span> New Patient
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card" onclick="showPage('patients')">
+                        <div class="stat-icon blue">👥</div>
+                        <div class="stat-details">
+                            <div class="stat-label">Total Patients</div>
+                            <div class="stat-value" id="totalPatients">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" onclick="showPage('calendar')">
+                        <div class="stat-icon green">📅</div>
+                        <div class="stat-details">
+                            <div class="stat-label">Today's Appointments</div>
+                            <div class="stat-value" id="todayAppointments">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">⏳</div>
+                        <div class="stat-details">
+                            <div class="stat-label">Pending Appointments</div>
+                            <div class="stat-value" id="pendingAppointments">0</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon purple">✅</div>
+                        <div class="stat-details">
+                            <div class="stat-label">Confirmed Today</div>
+                            <div class="stat-value" id="confirmedAppointments">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Today's Appointments -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="font-size: 20px; font-weight: 700;">📅 Today's Schedule</h3>
+                        <button class="btn btn-primary" onclick="showPage('calendar')">View All</button>
+                    </div>
+                    <div id="todayAppointmentsList"></div>
+                </div>
+            </div>
+
+            <!-- Calendar Page -->
+            <div id="calendarPage" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>📅</span>
+                        Appointments Calendar
+                    </h1>
+                    <button class="btn btn-primary" onclick="showAddAppointmentModal()">
+                        <span>➕</span> New Appointment
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="btn btn-secondary" onclick="changeMonth(-1)">◀</button>
+                            <div class="calendar-title" id="calendarTitle">November 2025</div>
+                            <button class="btn btn-secondary" onclick="changeMonth(1)">▶</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+
+                <div class="appointments-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 style="font-size: 20px; font-weight: 700;" id="appointmentsTitle">Appointments</h3>
+                    </div>
+                    <div id="appointmentsList"></div>
+                </div>
+            </div>
+
+            <!-- Patients Page -->
+            <div id="patientsPage" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>👥</span>
+                        Patient Management
+                    </h1>
+                    <button class="btn btn-success" onclick="showAddPatientModal()">
+                        <span>➕</span> New Patient
+                    </button>
+                </div>
+
+                <div class="search-box">
+                    <div class="search-input-group">
+                        <input type="text" id="patientSearchInput" class="search-input" placeholder="Search by name, ID, or phone...">
+                        <button class="btn btn-primary" onclick="searchPatients()">
+                            <span>🔍</span> Search
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSearch()">
+                            <span>✖</span> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Patient ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Phone</th>
+                                <th>Last Visit</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>👤</span>
+                        Doctor Profile
+                    </h1>
+                    <button class="btn btn-primary" onclick="showEditProfileModal()">
+                        <span>✏️</span> Edit Profile
+                    </button>
+                </div>
+
+                <div class="profile-header">
+                    <div class="profile-main">
+                        <div class="profile-avatar">👨‍⚕️</div>
+                        <div class="profile-info">
+                            <h2 id="doctorName">Dr. Ahmed Mohamed</h2>
+                            <p id="doctorSpecialty">Cardiologist</p>
+                            <p style="margin-top: 5px;">⭐ <span id="doctorRating">4.8</span>/5.0 Rating</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profileTotalPatients">0</div>
+                            <div class="profile-stat-label">Total Patients</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profileRating">4.8</div>
+                            <div class="profile-stat-label">Average Rating</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profileAppointments">0</div>
+                            <div class="profile-stat-label">Total Appointments</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <span>📍</span>
+                            Clinic Information
+                        </h3>
+                        <div class="info-item">
+                            <div class="info-icon">🏥</div>
+                            <div class="info-details">
+                                <div class="info-label">Clinic Name</div>
+                                <div class="info-value" id="clinicName">Heart Care Clinic</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📍</div>
+                            <div class="info-details">
+                                <div class="info-label">Address</div>
+                                <div class="info-value" id="clinicAddress">123 Medical Street, Cairo, Egypt</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📞</div>
+                            <div class="info-details">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value" id="clinicPhone">+20 123 456 7890</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📧</div>
+                            <div class="info-details">
+                                <div class="info-label">Email</div>
+                                <div class="info-value" id="clinicEmail">dr.ahmed@heartcare.com</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <span>👨‍⚕️</span>
+                            Doctor Information
+                        </h3>
+                        <div class="info-item">
+                            <div class="info-icon">📞</div>
+                            <div class="info-details">
+                                <div class="info-label">Doctor Phone</div>
+                                <div class="info-value" id="doctorPhone">01000000000</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📧</div>
+                            <div class="info-details">
+                                <div class="info-label">Doctor Email</div>
+                                <div class="info-value" id="doctorEmail">ahmed@clinic.com</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📍</div>
+                            <div class="info-details">
+                                <div class="info-label">City</div>
+                                <div class="info-value" id="doctorCity">Cairo</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <span>🎓</span>
+                            Professional Details
+                        </h3>
+                        <div class="info-item">
+                            <div class="info-icon">🏆</div>
+                            <div class="info-details">
+                                <div class="info-label">Specialty</div>
+                                <div class="info-value" id="profileSpecialty">Cardiology</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📜</div>
+                            <div class="info-details">
+                                <div class="info-label">Certificate</div>
+                                <div class="info-value" id="profileCertificate">MD Cairo University</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🔖</div>
+                            <div class="info-details">
+                                <div class="info-label">License Number</div>
+                                <div class="info-value" id="profileLicense">MD-12345</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <span>⏰</span>
+                            Working Hours
+                        </h3>
+                        <div class="info-item">
+                            <div class="info-icon">📅</div>
+                            <div class="info-details">
+                                <div class="info-label">Working Days</div>
+                                <div class="info-value" id="profileWorkingDays">Sunday - Thursday</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🕐</div>
+                            <div class="info-details">
+                                <div class="info-label">Working Hours</div>
+                                <div class="info-value" id="profileWorkingHours">9:00 AM - 6:00 PM</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">💰</div>
+                            <div class="info-details">
+                                <div class="info-label">Consultation Fee</div>
+                                <div class="info-value" id="profileConsultationFee">500 EGP</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3 class="info-card-title">
+                            <span>📊</span>
+                            Statistics
+                        </h3>
+                        <div class="info-item">
+                            <div class="info-icon">👥</div>
+                            <div class="info-details">
+                                <div class="info-label">Total Patients Treated</div>
+                                <div class="info-value" id="statsTotalPatients">0</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📅</div>
+                            <div class="info-details">
+                                <div class="info-label">Appointments This Month</div>
+                                <div class="info-value" id="statsMonthAppointments">0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">⭐</div>
+                            <div class="info-details">
+                                <div class="info-label">Patient Satisfaction</div>
+                                <div class="info-value">4.8/5.0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 Clinic Management System - All Rights Reserved</p>
+        </footer>
+    </div>
+
+            <!-- Consultation Page (opened when doctor accepts an appointment) -->
+            <div id="consultationPage" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>🩺</span>
+                        Consultation
+                    </h1>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button class="btn btn-secondary" onclick="showPage('calendar')">← Back to Calendar</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+                        <div>
+                            <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; padding: 20px; border-radius: 12px;">
+                                <h3 id="consultationPatientName" style="margin-bottom:6px;">Patient Name</h3>
+                                <div id="consultationAppointmentInfo" style="opacity:0.95; font-size:14px;">Appointment info</div>
+                            </div>
+
+                            <div style="margin-top:16px;" id="consultationPatientSummary"></div>
+
+                            <div style="margin-top:20px;">
+                                <h4 style="margin-bottom:10px;">📋 Previous Visits</h4>
+                                <div id="consultationVisits"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="margin-bottom:10px;">🔎 Consultation / Diagnosis</h3>
+                            <form id="consultationForm" onsubmit="saveConsultation(event)">
+                                <input type="hidden" id="consultationAppointmentId">
+                                <div class="form-group">
+                                    <label class="form-label">Diagnosis (Search & Add)</label>
+                                    <div style="position:relative;margin-bottom:10px;">
+                                        <input 
+                                            type="text" 
+                                            class="form-input" 
+                                            id="consultationDiagnosisSearch" 
+                                            placeholder="Type disease name..." 
+                                            oninput="handleDiseaseSearch(this.value)"
+                                            autocomplete="off"
+                                        >
+                                        <div id="diseaseAutocomplete" style="position:absolute;top:100%;left:0;right:0;background:var(--bg-primary);border:1px solid var(--border-color);border-top:none;border-radius:0 0 10px 10px;max-height:200px;overflow-y:auto;display:none;z-index:1000;box-shadow:0 4px 12px var(--shadow);">
+                                        </div>
+                                    </div>
+                                    <div id="selectedDiseases" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Prescription</label>
+                                    <input type="text" class="form-input" id="consultationPrescription" placeholder="e.g. Amlodipine 5mg">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Notes</label>
+                                    <textarea class="form-textarea" id="consultationNotes" placeholder="Clinical notes, recommendations..."></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Patient Condition</label>
+                                    <select class="form-select" id="consultationCondition">
+                                        <option value="stable">Stable</option>
+                                        <option value="improve">Improving</option>
+                                        <option value="critical">Critical</option>
+                                        <option value="followup">Requires Follow-up</option>
+                                    </select>
+                                </div>
+                                <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px;">
+                                    <button type="button" class="btn btn-secondary" onclick="showPage('calendar')">Cancel</button>
+                                    <button type="submit" class="btn btn-success">Complete Consultation</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Details Full Page -->
+            <div id="patientDetailsPage" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span>📋</span>
+                        Patient Details
+                    </h1>
+                    <div style="display:flex;gap:10px;align-items:center;">
+                        <button class="btn btn-secondary" onclick="showPage('patients')">← Back to Patients</button>
+                    </div>
+                </div>
+                <div id="patientDetailsPageContent"></div>
+            </div>
+
+    <!-- Add Appointment Modal -->
+    <div class="modal" id="addAppointmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ New Appointment</h3>
+                <button class="modal-close" onclick="closeModal('addAppointmentModal')">✖</button>
+            </div>
+            <form id="appointmentForm" onsubmit="saveAppointment(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Select Patient</label>
+                        <select class="form-select" id="appointmentPatient" required>
+                            <option value="">-- Select Patient --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" id="appointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time</label>
+                        <input type="time" class="form-input" id="appointmentTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="appointmentStatus" required>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" id="appointmentNotes" placeholder="Any additional notes..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addAppointmentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Appointment Modal -->
+    <div class="modal" id="editAppointmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Edit Appointment</h3>
+                <button class="modal-close" onclick="closeModal('editAppointmentModal')">✖</button>
+            </div>
+            <form id="editAppointmentForm" onsubmit="updateAppointment(event)">
+                <input type="hidden" id="editAppointmentId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Patient</label>
+                        <input type="text" class="form-input" id="editAppointmentPatientName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-input" id="editAppointmentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time</label>
+                        <input type="time" class="form-input" id="editAppointmentTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="editAppointmentStatus" required>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-textarea" id="editAppointmentNotes"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editAppointmentModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Patient Modal -->
+    <div class="modal" id="addPatientModal">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 class="modal-title">👤 New Patient</h3>
+                <button class="modal-close" onclick="closeModal('addPatientModal')">✖</button>
+            </div>
+            <form id="patientForm" onsubmit="savePatient(event)">
+                <!-- Personal Information Section -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Personal Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="patientName" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Age *</label>
+                        <input type="number" class="form-input" id="patientAge" placeholder="30" min="1" max="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender *</label>
+                        <select class="form-select" id="patientGender" required>
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-input" id="patientPhone" placeholder="+20 123 456 7890" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">City/Governorate</label>
+                        <select class="form-select" id="patientCity">
+                            <option value="">-- Select --</option>
+                            <option value="Cairo">Cairo</option>
+                            <option value="Alexandria">Alexandria</option>
+                            <option value="Giza">Giza</option>
+                            <option value="Aswan">Aswan</option>
+                            <option value="Asyut">Asyut</option>
+                            <option value="Beheira">Beheira</option>
+                            <option value="Beni Suef">Beni Suef</option>
+                            <option value="Dakahlia">Dakahlia</option>
+                            <option value="Damietta">Damietta</option>
+                            <option value="Faiyum">Faiyum</option>
+                            <option value="Gharbia">Gharbia</option>
+                            <option value="Ismailia">Ismailia</option>
+                            <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+                            <option value="Luxor">Luxor</option>
+                            <option value="Matrouh">Matrouh</option>
+                            <option value="Minya">Minya</option>
+                            <option value="Monufia">Monufia</option>
+                            <option value="New Valley">New Valley</option>
+                            <option value="North Sinai">North Sinai</option>
+                            <option value="Port Said">Port Said</option>
+                            <option value="Qalyubia">Qalyubia</option>
+                            <option value="Qena">Qena</option>
+                            <option value="Red Sea">Red Sea</option>
+                            <option value="Sharqia">Sharqia</option>
+                            <option value="Sohag">Sohag</option>
+                            <option value="South Sinai">South Sinai</option>
+                            <option value="Suez">Suez</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Marital Status</label>
+                        <select class="form-select" id="patientMarried">
+                            <option value="">-- Select --</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Medical Information Section -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Blood Type</label>
+                        <select class="form-select" id="patientBloodType">
+                            <option value="">-- Select --</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Residence Type</label>
+                        <select class="form-select" id="patientResidenceType">
+                            <option value="">-- Select --</option>
+                            <option value="Urban">Urban</option>
+                            <option value="Rural">Rural</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Medical History Checkboxes -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical History</h4>
+                <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientHypertension"> Hypertension
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientDiabetes"> Diabetes
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientAnaemia"> Anaemia
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientChestPain"> Chest Pain
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientSodium"> Sodium Imbalance
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="patientPlatelets"> Platelet Disorder
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Medical Measurements -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Measurements</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Glucose Level (mg/dL)</label>
+                        <input type="number" class="form-input" id="patientGlucose" placeholder="100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Creatinine (mg/dL)</label>
+                        <input type="number" class="form-input" id="patientCreatinine" placeholder="1.0" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cholesterol (mg/dL)</label>
+                        <input type="number" class="form-input" id="patientCholesterol" placeholder="200" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">BMI</label>
+                        <input type="number" class="form-input" id="patientBMI" placeholder="25" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Resting BP (mmHg)</label>
+                        <input type="text" class="form-input" id="patientRestingBP" placeholder="120/80">
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Additional Information</h4>
+                <div class="form-group">
+                    <label class="form-label">Allergies</label>
+                    <textarea class="form-input" id="patientAllergies" placeholder="Penicillin, etc." rows="2" style="resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea class="form-input" id="patientNotes" placeholder="Any important medical information..." rows="2" style="resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPatientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Patient Modal -->
+    <div class="modal" id="editPatientModal">
+        <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Edit Patient</h3>
+                <button class="modal-close" onclick="closeModal('editPatientModal')">✖</button>
+            </div>
+            <form id="editPatientForm" onsubmit="saveEditedPatient(event)">
+                <input type="hidden" id="editPatientId">
+                
+                <!-- Personal Information Section -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Personal Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="editPatientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Age *</label>
+                        <input type="number" class="form-input" id="editPatientAge" min="1" max="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender *</label>
+                        <select class="form-select" id="editPatientGender" required>
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" class="form-input" id="editPatientPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">City/Governorate</label>
+                        <select class="form-select" id="editPatientCity">
+                            <option value="">-- Select --</option>
+                            <option value="Cairo">Cairo</option>
+                            <option value="Alexandria">Alexandria</option>
+                            <option value="Giza">Giza</option>
+                            <option value="Aswan">Aswan</option>
+                            <option value="Asyut">Asyut</option>
+                            <option value="Beheira">Beheira</option>
+                            <option value="Beni Suef">Beni Suef</option>
+                            <option value="Dakahlia">Dakahlia</option>
+                            <option value="Damietta">Damietta</option>
+                            <option value="Faiyum">Faiyum</option>
+                            <option value="Gharbia">Gharbia</option>
+                            <option value="Ismailia">Ismailia</option>
+                            <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+                            <option value="Luxor">Luxor</option>
+                            <option value="Matrouh">Matrouh</option>
+                            <option value="Minya">Minya</option>
+                            <option value="Monufia">Monufia</option>
+                            <option value="New Valley">New Valley</option>
+                            <option value="North Sinai">North Sinai</option>
+                            <option value="Port Said">Port Said</option>
+                            <option value="Qalyubia">Qalyubia</option>
+                            <option value="Qena">Qena</option>
+                            <option value="Red Sea">Red Sea</option>
+                            <option value="Sharqia">Sharqia</option>
+                            <option value="Sohag">Sohag</option>
+                            <option value="South Sinai">South Sinai</option>
+                            <option value="Suez">Suez</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Marital Status</label>
+                        <select class="form-select" id="editPatientMarried">
+                            <option value="">-- Select --</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Divorced">Divorced</option>
+                            <option value="Widowed">Widowed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Medical Information Section -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Blood Type</label>
+                        <select class="form-select" id="editPatientBloodType">
+                            <option value="">-- Select --</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Residence Type</label>
+                        <select class="form-select" id="editPatientResidenceType">
+                            <option value="">-- Select --</option>
+                            <option value="Urban">Urban</option>
+                            <option value="Rural">Rural</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Medical History Checkboxes -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical History</h4>
+                <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientHypertension"> Hypertension
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientDiabetes"> Diabetes
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientAnaemia"> Anaemia
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientChestPain"> Chest Pain
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientSodium"> Sodium Imbalance
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" id="editPatientPlatelets"> Platelet Disorder
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Medical Measurements -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Measurements</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Glucose Level (mg/dL)</label>
+                        <input type="number" class="form-input" id="editPatientGlucose" placeholder="100" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Creatinine (mg/dL)</label>
+                        <input type="number" class="form-input" id="editPatientCreatinine" placeholder="1.0" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cholesterol (mg/dL)</label>
+                        <input type="number" class="form-input" id="editPatientCholesterol" placeholder="200" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">BMI</label>
+                        <input type="number" class="form-input" id="editPatientBMI" placeholder="25" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Resting BP (mmHg)</label>
+                        <input type="text" class="form-input" id="editPatientRestingBP" placeholder="120/80">
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Additional Information</h4>
+                <div class="form-group">
+                    <label class="form-label">Allergies</label>
+                    <textarea class="form-input" id="editPatientAllergies" placeholder="Penicillin, etc." rows="2" style="resize: vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea class="form-input" id="editPatientNotes" placeholder="Any important medical information..." rows="2" style="resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editPatientModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div class="modal" id="patientDetailsModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📋 Patient Details</h3>
+                <button class="modal-close" onclick="closeModal('patientDetailsModal')">✖</button>
+            </div>
+            <div id="patientDetailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Edit Profile</h3>
+                <button class="modal-close" onclick="closeModal('editProfileModal')">✖</button>
+            </div>
+            <form id="profileForm" onsubmit="saveProfile(event)">
+                <!-- Profile Photo Section -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Profile Photo</h4>
+                <div class="form-group">
+                    <div id="profilePhotoPreview" style="width: 120px; height: 120px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 40px; background-size: cover; background-position: center;">👨‍⚕️</div>
+                    <input type="file" class="form-input" id="profilePhotoInput" accept="image/*" onchange="previewProfilePhoto()">
+                </div>
+
+                <!-- Personal Information -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Personal Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" id="editDoctorName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-input" id="editDoctorEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" class="form-input" id="editDoctorPhone" required>
+                    </div>
+                </div>
+
+                <!-- Doctor Location Info -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Location & City</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-input" id="editDoctorCity" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                </div>
+
+                <!-- Professional Details (Read-Only) -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Professional Details (Cannot Edit)</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Specialty</label>
+                        <input type="text" class="form-input" id="editDoctorSpecialty" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">National ID</label>
+                        <input type="text" class="form-input" id="editNationalId" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Certificate</label>
+                        <input type="text" class="form-input" id="editProfileCertificate" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">License Number</label>
+                        <input type="text" class="form-input" id="editProfileLicense" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                    </div>
+                </div>
+
+                <!-- Clinic Information -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Clinic Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Clinic Name *</label>
+                        <input type="text" class="form-input" id="editClinicName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clinic Phone *</label>
+                        <input type="tel" class="form-input" id="editClinicPhone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinic Address *</label>
+                    <input type="text" class="form-input" id="editClinicAddress" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinic Email</label>
+                    <input type="email" class="form-input" id="editClinicEmail">
+                </div>
+
+                <!-- Working Hours & Consultation Fee -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Working Hours & Fees</h4>
+                
+                <!-- Working Days Checkboxes -->
+                <div class="form-group">
+                    <label class="form-label">Working Days</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Sat" class="editWorkingDay">
+                            <span>Saturday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Sun" class="editWorkingDay">
+                            <span>Sunday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Mon" class="editWorkingDay">
+                            <span>Monday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Tue" class="editWorkingDay">
+                            <span>Tuesday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Wed" class="editWorkingDay">
+                            <span>Wednesday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Thu" class="editWorkingDay">
+                            <span>Thursday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" id="editWorkingDay_Fri" class="editWorkingDay">
+                            <span>Friday</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Working Hours Times -->
+                <div class="form-grid" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Start Time</label>
+                        <input type="time" class="form-input" id="editWorkingHoursStart" value="09:00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time</label>
+                        <input type="time" class="form-input" id="editWorkingHoursEnd" value="18:00">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Consultation Fee (EGP)</label>
+                        <input type="number" class="form-input" id="editConsultationFee" min="0" placeholder="150">
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Education & Qualifications</h4>
+                <div class="form-group">
+                    <label class="form-label">Education/Qualifications</label>
+                    <textarea class="form-input" id="editProfileEducation" rows="2" style="resize: vertical;"></textarea>
+                </div>
+
+                <!-- Password Section -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Change Password (Optional)</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-input" id="editCurrentPassword" placeholder="Leave empty if not changing">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-input" id="editNewPassword" placeholder="Min 6 characters">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-input" id="editConfirmPassword" placeholder="Confirm new password">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editProfileModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- 1. Api: كل الاتصال بالباك اند -->
+<script src="js/api.js"></script>
+
+<!-- 2. UI: theme, modals, toast -->
+<script src="js/ui.js"></script>
+
+<!-- 3. Profile: تعديل بيانات الطبيب - MUST BE BEFORE AUTH -->
+<script src="js/profile.js"></script>
+
+<!-- 4. Auth: login, signup, logout -->
+<script src="js/auth.js"></script>
+
+<!-- 5. Patients: إضافة المرضى، تعديلهم، البحث -->
+<script src="js/patients.js"></script>
+
+<!-- 6. Appointments: المواعيد، الكالندر، confirm, startConsultation -->
+<script src="js/appointments.js"></script>
+
+<!-- 7. Diseases Data: قائمة الأمراض + searchDiseases -->
+<script src="js/diseasesData.js"></script>
+
+<!-- 8. Consultation: تشخيص المرض، selectDiseases، saveConsultation -->
+<script src="js/consultation.js"></script>
+
+<!-- 9. Patients: إضافة المرضى، تعديلهم، البحث -->
+<script src="js/patients.js"></script>
+
+<!-- 10. Main: global state + DOMContentLoaded + loadDefaultData -->
+<script src="js/main.js"></script>
+
+</body>
+</html>
