@@ -113,14 +113,30 @@
         }
      // Calendar Functions
         function renderCalendar() {
+            console.log("🎨 Rendering calendar... currentMonth:", currentMonth, "currentYear:", currentYear);
+            
             const grid = document.getElementById('calendarGrid');
             const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
             
-            document.getElementById('calendarTitle').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+            // Make sure grid exists before trying to update
+            if (!grid) {
+                console.error("❌ Calendar grid not found!");
+                return;
+            }
+            
+            console.log("✅ Grid element found");
+            
+            const titleElement = document.getElementById('calendarTitle');
+            if (titleElement) {
+                titleElement.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+                console.log("✅ Calendar title updated");
+            }
             
             const firstDay = new Date(currentYear, currentMonth, 1).getDay();
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const today = new Date().toISOString().split('T')[0];
+            
+            console.log("📅 Building calendar for", currentYear, monthNames[currentMonth], "- Days in month:", daysInMonth);
             
             let html = `
                 <div class="calendar-day-header">Sun</div>
@@ -156,7 +172,14 @@
             }
             
             grid.innerHTML = html;
-            renderAppointmentsList(selectedDate);
+            console.log("✅ Calendar Grid Rendered");
+            
+            if (typeof renderAppointmentsList === 'function') {
+                renderAppointmentsList(selectedDate);
+                console.log("✅ Appointments list rendered");
+            } else {
+                console.error("❌ renderAppointmentsList is not defined");
+            }
         }
 
         function selectDate(date) {

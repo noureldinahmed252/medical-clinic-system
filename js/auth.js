@@ -36,11 +36,6 @@
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('signupPage').classList.remove('hidden');
             document.getElementById('mainApp').classList.add('hidden');
-            
-            // Initialize photo upload when signup page is shown
-            setTimeout(() => {
-                initPhotoUpload();
-            }, 100);
         }
 
         function handleSignup(e) {
@@ -97,6 +92,10 @@
                         const doctorId = response.data?.doctor?.id || response.data?.doctorId || response.doctorId || 1;
                         console.log("🎯 Extracted doctorId from login:", doctorId);
                         doctorProfile.doctorId = doctorId;
+                        
+                        // 💾 Save doctorId to localStorage for session persistence
+                        localStorage.setItem("doctorId", doctorId);
+                        console.log("💾 Saved doctorId to localStorage:", doctorId);
 
                         isLoggedIn = true;
 
@@ -174,8 +173,64 @@
                                 console.log("✅ doctorProfile updated:", doctorProfile);
                                 console.log("📸 Photo in updated doctorProfile:", doctorProfile.photo);
                                 
-                                // 🔴 IMPORTANT: Update Profile Page with new data from Backend
-                                updateProfilePage();
+                                // ===== FETCH APPOINTMENTS FROM API =====
+                                console.log("📡 Loading appointments from API...");
+                                getDoctorAppointments()
+                                    .then(apiAppointments => {
+                                        console.log("✅ Appointments from API:", apiAppointments);
+                                        
+                                        // Convert API format to local format
+                                        appointments = apiAppointments.map((apt, index) => {
+                                            // Find or create patient based on patientName
+                                            let patient = patients.find(p => p.name.toLowerCase() === apt.patientName.toLowerCase());
+                                            
+                                            if (!patient) {
+                                                // Create a new patient if not found
+                                                patient = {
+                                                    id: `API_P${apt.appointmentId}`,
+                                                    name: apt.patientName,
+                                                    age: 0,
+                                                    gender: 'Unknown',
+                                                    phone: '',
+                                                    bloodType: 'Unknown',
+                                                    allergies: 'None',
+                                                    chronic: 'None',
+                                                    lastVisit: apt.appointmentDate,
+                                                    notes: `Patient from appointment ID: ${apt.appointmentId}`,
+                                                    visits: []
+                                                };
+                                                patients.push(patient);
+                                                console.log("✨ New patient created:", patient);
+                                            }
+                                            
+                                            // Convert time format: "01:00 AM" → "01:00"
+                                            const timeFormatted = apt.appointmentTime.replace(' AM', '').replace(' PM', '');
+                                            
+                                            return {
+                                                id: apt.appointmentId,
+                                                patientId: patient.id,
+                                                patientName: apt.patientName,
+                                                date: apt.appointmentDate,
+                                                time: timeFormatted,
+                                                status: apt.status.toLowerCase() === 'pending' ? 'pending' : 'confirmed',
+                                                notes: '',
+                                                clinicName: apt.clinicName,
+                                                durationMinutes: apt.durationMinutes,
+                                                price: apt.price
+                                            };
+                                        });
+                                        
+                                        console.log("🔄 Converted appointments to local format:", appointments);
+                                        
+                                        // Now update all UI with real data
+                                        updateAllData();
+                                    })
+                                    .catch(error => {
+                                        console.error("⚠️ Failed to fetch appointments from API:", error);
+                                        // Update UI with profile data only if appointments fail
+                                        updateAllData();
+                                    });
+
                                 
                                 // Show dashboard
                                 const dashboardPage = document.getElementById('dashboardPage');
@@ -195,8 +250,9 @@
                             .catch(profileError => {
                                 console.error("⚠️ Could not load full profile, using basic data:", profileError);
                                 // Continue even if profile fetch fails
-                                // 🔴 IMPORTANT: Update Profile Page even with basic data
-                                updateProfilePage();
+                                // Update all UI with basic data
+                                updateAllData();
+
                                 
                                 const dashboardPage = document.getElementById('dashboardPage');
                                 if (dashboardPage) dashboardPage.classList.remove('hidden');
@@ -254,27 +310,9 @@
     const certificate = document.getElementById('signupCertificate').value.trim();
     const licenseNumber = document.getElementById('signupLicense').value.trim();
     const nationalId = document.getElementById('signupNationalId').value.trim();
-    const clinicName = document.getElementById('signupClinicName').value.trim();
-    const clinicPhone = document.getElementById('signupClinicPhone').value.trim();
-    const clinicEmail = document.getElementById('signupClinicEmail').value.trim();
-    const clinicLocation = document.getElementById('signupClinicAddress').value.trim();
-
-    // Validate photo is selected FIRST
-    if (!selectedPhotoFile) {
-        showToast('❌ Profile photo is required', 'error', 'Photo required');
-        const photoGroup = document.querySelector('.photo-group');
-        if (photoGroup) {
-            photoGroup.style.borderLeft = '4px solid var(--danger)';
-            photoGroup.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => {
-                photoGroup.style.borderLeft = '';
-            }, 3000);
-        }
-        return;
-    }
 
     // Validate required fields
-    if (!name || !email || !password || !specialty || !certificate || !licenseNumber || !nationalId || !clinicName || !clinicLocation) {
+    if (!name || !email || !password || !specialty || !certificate || !licenseNumber || !nationalId) {
         showToast('❌ Please fill all required fields', 'error');
         return;
     }
@@ -296,25 +334,20 @@
     const signupBtn = document.querySelector('#signupForm button[type="submit"]');
 
     try {
-        // Create FormData with exact Swagger field names (PascalCase)
-        const formData = new FormData();
-        
-        formData.append('FullName', name);
-        formData.append('Email', email);
-        formData.append('Password', password);
-        formData.append('Phone', phone);
-        formData.append('City', city);
-        formData.append('SpecialtyName', specialty);
-        formData.append('Certificate', certificate);
-        formData.append('LicenseNumber', licenseNumber);
-        formData.append('NationalNumber', parseInt(nationalId) || 0);
-        formData.append('ClinicName', clinicName);
-        formData.append('ClinicPhone', clinicPhone);
-        formData.append('ClinicEmail', clinicEmail);
-        formData.append('ClinicLocation', clinicLocation);
-        formData.append('DoctorImage', selectedPhotoFile);
+        // Create form data with exact API field names
+        const formData = {
+            FullName: name,
+            Email: email,
+            Password: password,
+            Phone: phone,
+            City: city,
+            SpecialtyName: specialty,
+            Certificate: certificate,
+            LicenseNumber: licenseNumber,
+            NationalNumber: parseInt(nationalId) || 0
+        };
 
-        console.log("📋 Registration FormData prepared");
+        console.log("📋 Registration data prepared:", formData);
 
         // Disable button during request
         if (signupBtn) {
@@ -322,32 +355,11 @@
             signupBtn.innerHTML = '⏳ Creating account...';
         }
 
-        // Send registration to API
-        const registrationResponse = await apiSignupWithPhoto(formData);
-        console.log("✅ Registration response received");
-        console.log("📌 Full response object:", registrationResponse);
-        console.log("📌 Response keys:", Object.keys(registrationResponse));
-        console.log("📌 response.data:", registrationResponse.data);
-        console.log("📌 response.data type:", typeof registrationResponse.data);
-        
-        // Try to log nested structure if data is an object
-        if (registrationResponse.data && typeof registrationResponse.data === 'object') {
-            console.log("📌 response.data keys:", Object.keys(registrationResponse.data));
-            console.log("📌 response.data.doctorId:", registrationResponse.data.doctorId);
-            console.log("📌 response.data.data:", registrationResponse.data.data);
-            if (registrationResponse.data.data) {
-                console.log("📌 response.data.data keys:", Object.keys(registrationResponse.data.data));
-            }
-        }
-        
-        console.log("📌 response.doctorId:", registrationResponse.doctorId);
-        console.log("📌 response.id:", registrationResponse.id);
-        console.log("📌 response.userId:", registrationResponse.userId);
-        console.log("📌 response.result:", registrationResponse.result);
-        console.log("📌 response.status:", registrationResponse.status);
-        console.log("📌 response.statusCode:", registrationResponse.statusCode);
+        // Send registration to API using basic signup (no photo/clinic)
+        const registrationResponse = await apiSignup(formData);
+        console.log("✅ Registration response received:", registrationResponse);
 
-        // Check for explicit error fields (some APIs return 200 with error flag)
+        // Check for explicit error fields
         if (registrationResponse.error) {
             throw new Error(registrationResponse.error);
         }
@@ -358,7 +370,7 @@
         // Show success message
         showToast(`🎉 Account created successfully!`, 'success', 'Logging you in...');
 
-        // Extract doctor ID from registration response (try ALL possible paths)
+        // Extract doctor ID from registration response
         let doctorId = registrationResponse.data?.doctor?.id 
             || registrationResponse.data?.doctorId 
             || registrationResponse.doctorId 
@@ -371,40 +383,15 @@
             || registrationResponse.result?.id;
         
         console.log("🎯 Extracted doctorId:", doctorId);
-        console.log("🎯 From path: response.data.doctor.id =", registrationResponse.data?.doctor?.id);
         
         if (!doctorId) {
             console.error("⚠️ WARNING: Doctor ID is missing! Response:", registrationResponse);
-            console.error("⚠️ Cannot proceed without doctor ID");
             showToast('⚠️ Doctor ID not received from server', 'warning');
             doctorId = null;
         }
         
         if (doctorId === 1) {
             console.warn("⚠️ WARNING: Doctor ID defaulting to 1!");
-        }
-        console.log("📌 Doctor ID extracted:", doctorId);
-
-        // Convert photo to data URL for immediate display
-        let photoDataUrl = null;
-        if (selectedPhotoFile) {
-            try {
-                photoDataUrl = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        console.log("📸 Photo converted to data URL");
-                        resolve(e.target.result);
-                    };
-                    reader.onerror = () => {
-                        console.error("❌ Failed to read photo file");
-                        reject(new Error("Failed to read photo"));
-                    };
-                    reader.readAsDataURL(selectedPhotoFile);
-                });
-            } catch (photoError) {
-                console.warn("⚠️ Could not convert photo:", photoError);
-                photoDataUrl = null;
-            }
         }
 
         // Update local doctorProfile with registration data
@@ -418,22 +405,16 @@
             nationalNumber: nationalId,
             licenseNumber: licenseNumber,
             city: city,
-            clinicName: clinicName,
-            clinicPhone: clinicPhone,
-            clinicEmail: clinicEmail,
-            clinicAddress: clinicLocation,
-            clinicLocation: clinicLocation,
             rating: 0,
             specialtyId: null,
             workingDays: null,
             workingHours: null,
             consultationFee: 500,
-            photo: photoDataUrl || registrationResponse.photo || registrationResponse.photoUrl || registrationResponse.data?.photo || registrationResponse.data?.photoUrl || null,
-            doctorImage: registrationResponse.doctorImage || registrationResponse.data?.doctorImage || null
+            photo: null,
+            doctorImage: null
         };
 
         console.log("👤 Local doctorProfile created:", doctorProfile);
-        console.log("📸 Photo in profile:", doctorProfile.photo ? "✅ Photo exists" : "❌ No photo");
         
         console.log("🔐 Attempting auto-login with registered email...");
         
@@ -481,9 +462,8 @@
             navBtns[0].classList.add('active');
         }
         
-        // Clear form and photo
+        // Clear form
         document.getElementById('signupForm').reset();
-        removePhoto();
         
         showToast(`🎉 Welcome Dr. ${doctorProfile.name}!`, 'success', 'Registration complete');
 
@@ -499,7 +479,6 @@
         getProfileData(doctorId)
             .then(profileData => {
                 console.log("✅ Full profile data loaded after registration:", profileData);
-                console.log("📌 ProfileData ID:", profileData?.doctorId, "Expected ID:", doctorId);
                 
                 // Validate we got real data
                 if (!profileData || !profileData.doctorId) {
@@ -507,14 +486,13 @@
                     throw new Error("Invalid profile data");
                 }
                 
-                // Check if this is default data for ID=1 (when we expected different ID)
+                // Check if this is default data for ID=1
                 if (doctorId !== 1 && profileData.doctorId === 1) {
                     console.error("❌ API returned ID=1 data instead of ID=" + doctorId);
                     throw new Error("API returned wrong user data - got ID=1 instead");
                 }
                 
                 console.log("✅ Valid profile data received for ID:", profileData.doctorId);
-                console.log("🔄 Updating doctorProfile from API response...");
                 
                 // Update doctorProfile with API data
                 doctorProfile.doctorId = profileData.doctorId;
@@ -531,33 +509,74 @@
                 doctorProfile.consultationFee = profileData.doctorPrice || 500;
                 doctorProfile.rating = profileData.averageRating || 0;
                 doctorProfile.averageRating = profileData.averageRating || 0;
-                doctorProfile.photo = profileData.doctorImage || profileData.photo || null;
+                doctorProfile.photo = profileData.doctorImage || null;
                 doctorProfile.doctorImage = profileData.doctorImage;
-                
-                console.log("🖼️ Photo from API after signup:", profileData.doctorImage);
-                
-                // Clinic Information
-                doctorProfile.clinicId = profileData.clinicId;
-                doctorProfile.clinicName = profileData.clinicName || clinicName;
-                doctorProfile.clinicPhone = profileData.clinicPhone || clinicPhone;
-                doctorProfile.clinicEmail = profileData.clinicEmail || clinicEmail;
-                doctorProfile.clinicAddress = profileData.clinicLocation || clinicLocation;
-                doctorProfile.clinicLocation = profileData.clinicLocation || clinicLocation;
                 
                 // Working Details
                 doctorProfile.workingDays = profileData.workingDays;
                 doctorProfile.workingHours = profileData.workingHours;
                 
                 console.log("✅ doctorProfile updated with API data:", doctorProfile);
-                console.log("📸 Final photo in doctorProfile:", doctorProfile.photo);
-                updateProfilePage();
-                showToast('Profile data synchronized with server ✨', 'success');
+                
+                // ===== FETCH APPOINTMENTS FROM API =====
+                console.log("📡 Loading appointments from API...");
+                getDoctorAppointments()
+                    .then(apiAppointments => {
+                        console.log("✅ Appointments from API:", apiAppointments);
+                        
+                        // Convert API format to local format
+                        appointments = apiAppointments.map((apt, index) => {
+                            // Find or create patient based on patientName
+                            let patient = patients.find(p => p.name.toLowerCase() === apt.patientName.toLowerCase());
+                            
+                            if (!patient) {
+                                // Create a new patient if not found
+                                patient = {
+                                    id: `API_P${apt.appointmentId}`,
+                                    name: apt.patientName,
+                                    age: 0,
+                                    gender: 'Unknown',
+                                    phone: '',
+                                    bloodType: 'Unknown',
+                                    allergies: 'None',
+                                    chronic: 'None',
+                                    lastVisit: apt.appointmentDate,
+                                    notes: `Patient from appointment ID: ${apt.appointmentId}`,
+                                    visits: []
+                                };
+                                patients.push(patient);
+                                console.log("✨ New patient created:", patient);
+                            }
+                            
+                            // Convert time format: "01:00 AM" → "01:00"
+                            const timeFormatted = apt.appointmentTime.replace(' AM', '').replace(' PM', '');
+                            
+                            return {
+                                id: apt.appointmentId,
+                                patientId: patient.id,
+                                patientName: apt.patientName,
+                                date: apt.appointmentDate,
+                                time: timeFormatted,
+                                status: apt.status.toLowerCase() === 'pending' ? 'pending' : 'confirmed',
+                                notes: '',
+                                clinicName: apt.clinicName,
+                                durationMinutes: apt.durationMinutes,
+                                price: apt.price
+                            };
+                        });
+                        
+                        console.log("🔄 Converted appointments to local format:", appointments);
+                        updateAllData();
+                    })
+                    .catch(error => {
+                        console.error("⚠️ Failed to fetch appointments from API:", error);
+                        updateProfilePage();
+                    });
+
             })
             .catch(profileError => {
                 console.warn("⚠️ Could not load profile from server, using local data:", profileError.message);
                 console.log("📌 Local doctorProfile being used:", doctorProfile);
-                console.log("📸 Photo in local profile:", doctorProfile.photo);
-                // Dashboard and profile already showing with local data - this is fine
             });
 
     } catch (error) {
@@ -565,11 +584,6 @@
         console.error("Error message:", error?.message);
         console.error("Full error object:", error);
         console.error("Stack trace:", error?.stack);
-        console.log("🔍 Debugging info:", {
-            authToken: localStorage.getItem('authToken'),
-            isLoggedIn: isLoggedIn,
-            doctorProfileName: doctorProfile?.name
-        });
         
         // Extract safe error message
         const errorMsg = String(error?.message || error || 'Registration failed').substring(0, 150);
@@ -595,6 +609,11 @@
                 try {
                     // Call logout API if needed
                     apiLogout();
+                    
+                    // 🗑️ Clear session data from localStorage
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("doctorId");
+                    console.log("🗑️ Session data cleared");
                     
                     isLoggedIn = false;
                     
@@ -622,117 +641,10 @@
                     console.error("Logout error:", error);
                     // Still logout even if API fails
                     isLoggedIn = false;
+                    localStorage.removeItem("authToken");
+                    localStorage.removeItem("doctorId");
                     document.getElementById('mainApp').classList.add('hidden');
                     document.getElementById('loginPage').classList.remove('hidden');
                 }
             }
         }
-
- // ========================
-// Photo Upload Handlers
-// ========================
-
-let selectedPhotoFile = null;
-
-function initPhotoUpload() {
-    const photoInput = document.getElementById('signupPhoto');
-    const photoUploadBtn = document.getElementById('photoUploadArea');
-
-    if (!photoInput || !photoUploadBtn) {
-        console.error("❌ Photo upload elements not found");
-        return;
-    }
-
-    // Click button to select file
-    photoUploadBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        photoInput.click();
-    });
-
-    // File selected from input
-    photoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            handlePhotoSelect(file);
-        }
-    });
-}
-
-function handlePhotoSelect(file) {
-    const previewElement = document.getElementById('photoPreview');
-    const statusElement = document.getElementById('photoStatus');
-
-    if (!previewElement || !statusElement) {
-        console.error("❌ Photo preview/status elements not found");
-        return;
-    }
-
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-        selectedPhotoFile = null;
-        previewElement.innerHTML = '<span style="font-size: 32px;">📷</span>';
-        statusElement.textContent = '❌ File size must be less than 5MB';
-        statusElement.className = 'photo-status error';
-        showToast('❌ File size must be less than 5MB', 'error');
-        return;
-    }
-
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-        selectedPhotoFile = null;
-        previewElement.innerHTML = '<span style="font-size: 32px;">📷</span>';
-        statusElement.textContent = '❌ Supported formats: JPG, PNG, GIF, WebP only';
-        statusElement.className = 'photo-status error';
-        showToast('❌ Supported formats: JPG, PNG, GIF, WebP only', 'error');
-        return;
-    }
-
-    // File is valid - store it and show preview
-    selectedPhotoFile = file;
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-        // Clear previous classes and set success state
-        statusElement.className = 'photo-status success';
-        previewElement.innerHTML = `<img src="${e.target.result}" alt="Doctor Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
-        statusElement.textContent = `✅ ${file.name}`;
-        statusElement.style.color = 'var(--success)';
-        console.log("📸 Photo selected:", file.name, `(${(file.size / 1024).toFixed(2)} KB)`);
-    };
-    
-    reader.onerror = () => {
-        selectedPhotoFile = null;
-        previewElement.innerHTML = '<span style="font-size: 32px;">📷</span>';
-        statusElement.className = 'photo-status error';
-        statusElement.textContent = '❌ Failed to read file';
-        statusElement.style.color = 'var(--danger)';
-        showToast('❌ Failed to read photo file', 'error');
-    };
-
-    reader.readAsDataURL(file);
-}
-
-function removePhoto() {
-    const photoInput = document.getElementById('signupPhoto');
-    const previewElement = document.getElementById('photoPreview');
-    const statusElement = document.getElementById('photoStatus');
-
-    if (photoInput) {
-        photoInput.value = '';
-    }
-
-    if (previewElement) {
-        previewElement.innerHTML = '<span style="font-size: 32px;">📷</span>';
-    }
-
-    if (statusElement) {
-        statusElement.className = 'photo-status';
-        statusElement.textContent = 'No photo selected';
-        statusElement.style.color = 'var(--text-secondary)';
-    }
-
-    selectedPhotoFile = null;
-    console.log("📷 Photo removed");
-}

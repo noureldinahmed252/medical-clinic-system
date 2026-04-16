@@ -119,23 +119,104 @@ async function apiLogin(email, password) {
     return response;
 }
 
-// Register Doctor - Correct endpoint
+// Register Doctor - Correct endpoint (multipart/form-data)
 async function apiSignup(signupData) {
-    console.log("📝 Attempting registration with data:", signupData);
-    const response = await apiRequest("/api/auth/doctor/register", "POST", signupData);
-    
-    console.log("✅ Registration response:", response);
-    
-    // Save token if returned
-    if (response.token) {
-        localStorage.setItem("authToken", response.token);
-    } else if (response.access_token) {
-        localStorage.setItem("authToken", response.access_token);
-    } else if (response.data?.token) {
-        localStorage.setItem("authToken", response.data.token);
+    try {
+        console.log("📝 Attempting registration...");
+        console.log("📋 Registration data:", signupData);
+
+        // Convert object to FormData (API expects multipart/form-data, not JSON)
+        const formData = new FormData();
+        
+        formData.append('FullName', signupData.FullName || '');
+        formData.append('Email', signupData.Email || '');
+        formData.append('Password', signupData.Password || '');
+        formData.append('Phone', signupData.Phone || '');
+        formData.append('City', signupData.City || '');
+        formData.append('SpecialtyName', signupData.SpecialtyName || '');
+        formData.append('Certificate', signupData.Certificate || '');
+        formData.append('LicenseNumber', signupData.LicenseNumber || '');
+        formData.append('NationalNumber', signupData.NationalNumber || 0);
+        
+        
+
+        console.log("📦 FormData prepared for multipart/form-data request");
+
+        const response = await fetch(BASE_URL + "/api/auth/doctor/register", {
+            method: "POST",
+            headers: {
+                "ngrok-skip-browser-warning": "true"
+                // NOTE: Don't set Content-Type header, let browser set it with boundary for multipart/form-data
+            },
+            body: formData
+        });
+
+        console.log(`📊 Response Status: ${response.status} ${response.statusText}`);
+        
+        // Get response text first
+        const responseText = await response.text();
+        console.log(`📄 Response Body:`, responseText);
+
+        // Handle unauthorized
+        if (response.status === 401) {
+            localStorage.removeItem("authToken");
+            throw new Error("Your session has expired. Please login again");
+        }
+
+        // Try to parse JSON safely
+        let data = {};
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                console.error("❌ Invalid JSON response:", responseText);
+                throw new Error("Server returned invalid response");
+            }
+        }
+
+        if (!response.ok) {
+            // Handle error response
+            let errorMessage = data.message || data.Message || `Error: ${response.status}`;
+            
+            // Clean error message
+            errorMessage = String(errorMessage)
+                .replace(/[A-Z]:\\[^\s"]*/gi, '[path]')
+                .replace(/\/[a-zA-Z0-9_\-\/]+/g, '[path]')
+                .split('\n')[0]
+                .trim();
+            
+            if (!errorMessage || errorMessage.length === 0) {
+                if (response.status === 400) {
+                    errorMessage = data.message || 'Invalid data provided';
+                } else if (response.status === 404) {
+                    errorMessage = 'Server not available';
+                } else if (response.status === 500) {
+                    errorMessage = 'Server error - please check your input';
+                } else {
+                    errorMessage = 'Failed to register';
+                }
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        console.log("✅ Registration successful:", data);
+        
+        // Save token if returned
+        if (data.token) {
+            localStorage.setItem("authToken", data.token);
+            console.log("🔑 Token saved to localStorage");
+        } else if (data.access_token) {
+            localStorage.setItem("authToken", data.access_token);
+        } else if (data.data?.token) {
+            localStorage.setItem("authToken", data.data.token);
+        }
+        
+        return data;
+    } catch (error) {
+        console.error("🔴 Registration error:", error);
+        throw error;
     }
-    
-    return response;
 }
 
 // Register Doctor with Photo Upload
@@ -265,21 +346,351 @@ async function apiUpdateProfile(doctorId, formData) {
         
         console.log("✏️ Attempting to update doctor profile...");
         console.log("📌 Doctor ID:", doctorId);
-        console.log("📸 FormData contents:");
+        
+        // Convert FormData to object for inspection and potential JSON conversion
+        const dataObject = {};
         for (let [key, value] of formData.entries()) {
             if (value instanceof File) {
                 console.log(`  ${key}: File - ${value.name} (${value.size} bytes)`);
+                dataObject[key] = value; // Keep file as-is
             } else {
                 console.log(`  ${key}: ${value}`);
+                dataObject[key] = value;
             }
         }
 
-        const response = await fetch(BASE_URL + `/api/DoctorProfile/${doctorId}`, {
-            method: "PUT",
+        // Check if there are any files in the data
+        const hasFiles = Object.values(dataObject).some(val => val instanceof File);
+        
+        let requestConfig;
+        
+        if (hasFiles) {
+            // If there are files, send FormData
+            console.log("📤 Sending as FormData (with files)");
+            requestConfig = {
+                method: "PUT",
+                headers: {
+                    "ngrok-skip-browser-warning": "true",
+                    ...(token && { Authorization: "Bearer " + token })
+                    // Don't set Content-Type for multipart/form-data
+                },
+                body: formData
+            };
+        } else {
+            // If no files, send as JSON wrapped in 'dto'
+            console.log("📤 Sending as JSON (no files)");
+            
+            // Create dto wrapper object with all fields as strings
+            const dtoData = {};
+            for (let [key, value] of formData.entries()) {
+                // Keep everything as string for backend compatibility
+                dtoData[key] = String(value || '');
+            }
+            
+            console.log("📦 DTO Data:", dtoData);
+            
+            // Wrap in dto object
+            const requestBody = { dto: dtoData };
+            
+            requestConfig = {
+                method: "PUT",
+                headers: {
+                    "ngrok-skip-browser-warning": "true",
+                    "Content-Type": "application/json",
+                    ...(token && { Authorization: "Bearer " + token })
+                },
+                body: JSON.stringify(requestBody)
+            };
+        }
+
+        const response = await fetch(BASE_URL + `/api/DoctorProfile/${doctorId}`, requestConfig);
+
+        console.log(`📊 Response Status: ${response.status} ${response.statusText}`);
+        
+        // Get response text first
+        const responseText = await response.text();
+        console.log(`📄 Response Body:`, responseText);
+
+        // Try to parse JSON safely
+        let data = {};
+        if (responseText) {
+            try {
+                data = JSON.parse(responseText);
+            } catch {
+                console.error("❌ Invalid JSON response:", responseText);
+                throw new Error("Server returned invalid response");
+            }
+        }
+
+        if (!response.ok) {
+            // Handle error response
+            let errorMessage = data.message || data.Message || `Error: ${response.status}`;
+            
+            // If there are validation errors, extract them
+            if (data.errors) {
+                const errorList = Object.entries(data.errors)
+                    .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs[0] : msgs}`)
+                    .join('; ');
+                errorMessage = errorList || errorMessage;
+            }
+            
+            // Clean error message
+            errorMessage = String(errorMessage)
+                .replace(/[A-Z]:\\[^\s"]*/gi, '[path]')
+                .replace(/\/[a-zA-Z0-9_\-\/]+/g, '[path]')
+                .split('\n')[0]
+                .trim();
+            
+            if (!errorMessage || errorMessage.length === 0) {
+                if (response.status === 401) {
+                    errorMessage = 'Unauthorized - please login again';
+                } else if (response.status === 404) {
+                    errorMessage = 'Doctor profile not found';
+                } else if (response.status === 400) {
+                    errorMessage = data.message || 'Invalid data provided';
+                } else if (response.status === 415) {
+                    errorMessage = 'Invalid data format';
+                } else {
+                    errorMessage = 'Failed to update profile';
+                }
+            }
+            
+            throw new Error(errorMessage);
+        }
+
+        console.log("✅ Profile updated successfully:", data);
+        return data;
+    } catch (error) {
+        console.error("🔴 Profile update error:", error);
+        throw error;
+    }
+}
+
+// Logout
+async function apiLogout() {
+    console.log("🚪 Logging out...");
+    localStorage.removeItem("authToken");
+    console.log("✅ Logged out");
+}
+
+// ========================
+// MOCK DATA (Server Fallback)
+// ========================
+
+const mockDoctors = [
+    {
+        doctorId: 1,
+        name: "Dr. Ahmed Hassan",
+        specialty: "Cardiology",
+        averageRating: 4.8,
+        locations: ["Cairo Medical Center", "Downtown Clinic"],
+        email: "ahmed@hospital.com",
+        phone: "+20 100 123 4567",
+        bio: "Experienced cardiologist with 15 years of practice"
+    },
+    {
+        doctorId: 2,
+        name: "Dr. Fatima Mohammed",
+        specialty: "Neurology",
+        averageRating: 4.6,
+        locations: ["Modern Hospital", "Heliopolis Branch"],
+        email: "fatima@hospital.com",
+        phone: "+20 100 234 5678",
+        bio: "Specialist in neurological disorders and treatments"
+    },
+    {
+        doctorId: 3,
+        name: "Dr. Omar Khalil",
+        specialty: "Orthopedics",
+        averageRating: 4.9,
+        locations: ["Sports Medicine Center"],
+        email: "omar@hospital.com",
+        phone: "+20 100 345 6789",
+        bio: "Expert in sports injuries and joint replacement"
+    }
+];
+
+const mockClinics = [
+    {
+        clinicId: 1,
+        name: "Cairo Medical Center",
+        address: "123 Tahrir St, Cairo",
+        phone: "+20 2 1234 5678",
+        workingHours: "8:00 AM - 8:00 PM",
+        servicesOffered: ["General Consultation", "Emergency Care", "Lab Services"]
+    },
+    {
+        clinicId: 2,
+        name: "Downtown Clinic",
+        address: "456 Kasr El Aini St, Cairo",
+        phone: "+20 2 9876 5432",
+        workingHours: "9:00 AM - 6:00 PM",
+        servicesOffered: ["Specialist Consultation", "Follow-up Visits"]
+    }
+];
+
+const mockAppointments = [
+    {
+        appointmentId: 1,
+        doctorId: 1,
+        doctorName: "Dr. Ahmed Hassan",
+        specialty: "Cardiology",
+        clinicId: 1,
+        clinicName: "Cairo Medical Center",
+        appointmentDate: "2024-04-15",
+        appointmentTime: "10:00 AM",
+        status: "Confirmed",
+        patientName: "Youssef Ahmed",
+        notes: "Regular checkup"
+    },
+    {
+        appointmentId: 2,
+        doctorId: 2,
+        doctorName: "Dr. Fatima Mohammed",
+        specialty: "Neurology",
+        clinicId: 2,
+        clinicName: "Downtown Clinic",
+        appointmentDate: "2024-04-18",
+        appointmentTime: "2:30 PM",
+        status: "Confirmed",
+        patientName: "Layla Hassan",
+        notes: "Headache consultation"
+    }
+];
+
+const mockAvailability = {
+    doctorId: 1,
+    doctorName: "Dr. Ahmed Hassan",
+    specialty: "Cardiology",
+    clinics: [
+        {
+            clinicId: 1,
+            clinicName: "Cairo Medical Center",
+            address: "123 Tahrir St, Cairo"
+        }
+    ],
+    workingDays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+    availableSlots: [
+        {
+            date: "2024-04-15",
+            times: ["10:00 AM", "10:30 AM", "11:00 AM", "2:00 PM", "2:30 PM", "3:00 PM"]
+        },
+        {
+            date: "2024-04-16",
+            times: ["9:00 AM", "9:30 AM", "10:00 AM", "3:00 PM", "3:30 PM", "4:00 PM"]
+        }
+    ]
+};
+
+// ========================
+// DOCTOR PROFILE ENDPOINTS
+// ========================
+
+/**
+ * Fetch all doctors from the system
+ * Returns an array of doctors with basic info (id, name, specialty, rating, locations)
+ * Falls back to mock data if server is unavailable
+ * @returns {Promise<Array>} Array of doctor objects formatted for rendering
+ */
+async function getAllDoctors() {
+    try {
+        console.log("📋 Fetching all doctors...");
+        const response = await apiRequest("/api/DoctorProfile/all", "GET");
+        
+        console.log("✅ Doctors retrieved:", response);
+        
+        // Format response for frontend if needed
+        return Array.isArray(response) ? response : response.data || [];
+    } catch (error) {
+        console.warn("⚠️ Failed to fetch doctors from server, using mock data:", error.message);
+        return mockDoctors;
+    }
+}
+
+/**
+ * Fetch detailed profile for a specific doctor
+ * Returns comprehensive doctor information including biography, ratings, and qualifications
+ * Falls back to mock data if server is unavailable
+ * @param {number|string} doctorId - The ID of the doctor to fetch
+ * @returns {Promise<Object>} Doctor object with detailed information
+ */
+async function getDoctorById(doctorId) {
+    try {
+        console.log(`📊 Fetching doctor profile for ID: ${doctorId}`);
+        const response = await apiRequest(`/api/DoctorProfile/${doctorId}`, "GET");
+        
+        console.log("✅ Doctor profile retrieved:", response);
+        
+        return response.data || response;
+    } catch (error) {
+        console.warn(`⚠️ Failed to fetch doctor ${doctorId}, using mock data:`, error.message);
+        
+        // Return mock doctor or default object
+        const mockDoctor = mockDoctors.find(d => d.doctorId === parseInt(doctorId));
+        return mockDoctor || { error: "Doctor not found" };
+    }
+}
+
+/**
+ * Fetch doctor's profile image
+ * Returns image URL or blob for rendering doctor avatar
+ * Falls back to default image if unavailable
+ * @param {number|string} doctorId - The ID of the doctor
+ * @returns {Promise<string|Blob>} Image URL or blob data
+ */
+async function getDoctorImage(doctorId) {
+    try {
+        console.log(`🖼️ Fetching image for doctor ID: ${doctorId}`);
+        const response = await fetch(`${BASE_URL}/api/DoctorProfile/${doctorId}/image`, {
+            method: "GET",
+            headers: {
+                "ngrok-skip-browser-warning": "true"
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        
+        // Return blob URL for image rendering
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        console.log("✅ Doctor image retrieved");
+        
+        return imageUrl;
+    } catch (error) {
+        console.warn(`⚠️ Failed to fetch doctor image, using default:`, error.message);
+        
+        // Return a placeholder/default image
+        return "https://via.placeholder.com/150?text=Dr.Profile";
+    }
+}
+
+/**
+ * Upload doctor profile image
+ * Posts image to API endpoint: POST /api/DoctorProfile/{doctorId}/image
+ * Accepts multipart/form-data with 'image' field
+ * @param {number|string} doctorId - The ID of the doctor
+ * @param {File} imageFile - The image file to upload
+ * @returns {Promise<Object>} Response with imageUrl
+ */
+async function uploadDoctorProfileImage(doctorId, imageFile) {
+    try {
+        const token = localStorage.getItem("authToken");
+        
+        console.log(`📤 Uploading profile image for doctor ID: ${doctorId}`);
+        console.log(`📸 File: ${imageFile.name} (${imageFile.size} bytes)`);
+        
+        // Create FormData with image file
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        
+        const response = await fetch(`${BASE_URL}/api/DoctorProfile/${doctorId}/image`, {
+            method: "POST",
             headers: {
                 "ngrok-skip-browser-warning": "true",
                 ...(token && { Authorization: "Bearer " + token })
-                // NOTE: Don't set Content-Type header, let browser set it with boundary
+                // Don't set Content-Type, let browser set it with boundary
             },
             body: formData
         });
@@ -318,26 +729,209 @@ async function apiUpdateProfile(doctorId, formData) {
                 } else if (response.status === 404) {
                     errorMessage = 'Doctor profile not found';
                 } else if (response.status === 400) {
-                    errorMessage = data.message || 'Invalid data provided';
+                    errorMessage = data.message || 'Invalid image format';
                 } else {
-                    errorMessage = 'Failed to update profile';
+                    errorMessage = 'Failed to upload image';
                 }
             }
             
             throw new Error(errorMessage);
         }
 
-        console.log("✅ Profile updated successfully:", data);
+        console.log("✅ Profile image uploaded successfully:", data);
         return data;
     } catch (error) {
-        console.error("🔴 Profile update error:", error);
+        console.error("🔴 Image upload error:", error);
         throw error;
     }
 }
 
-// Logout
-async function apiLogout() {
-    console.log("🚪 Logging out...");
-    localStorage.removeItem("authToken");
-    console.log("✅ Logged out");
+// ========================
+// APPOINTMENT ENDPOINTS
+// ========================
+
+/**
+ * Fetch available appointment slots for a specific doctor
+ * Returns doctor info, clinics, working days, and available time slots
+ * Falls back to mock data if server is unavailable
+ * @param {number|string} doctorId - The ID of the doctor
+ * @returns {Promise<Object>} Availability object with slots organized by date
+ */
+async function getDoctorAvailability(doctorId) {
+    try {
+        console.log(`📅 Fetching availability for doctor ID: ${doctorId}`);
+        const response = await apiRequest(`/api/Appointment/doctor-availability/${doctorId}`, "GET");
+        
+        console.log("✅ Doctor availability retrieved:", response);
+        
+        return response.data || response;
+    } catch (error) {
+        console.warn(`⚠️ Failed to fetch availability, using mock data:`, error.message);
+        return mockAvailability;
+    }
+}
+
+/**
+ * Fetch the current user's appointments (patient perspective)
+ * Returns list of appointments with doctor, clinic, and timing details
+ * Falls back to mock data if server is unavailable
+ * @returns {Promise<Array>} Array of appointment objects
+ */
+async function getMyAppointments() {
+    try {
+        console.log("📋 Fetching your appointments...");
+        const response = await apiRequest("/api/Appointment/my-appointments", "GET");
+        
+        console.log("✅ Your appointments retrieved:", response);
+        
+        return Array.isArray(response) ? response : response.data || [];
+    } catch (error) {
+        console.warn("⚠️ Failed to fetch appointments, using mock data:", error.message);
+        return mockAppointments;
+    }
+}
+
+/**
+ * Fetch all appointments for the logged-in doctor
+ * Returns list of patients' appointments scheduled with this doctor
+ * Falls back to mock data if server is unavailable
+ * @returns {Promise<Array>} Array of appointment objects for the doctor's schedule
+ */
+async function getDoctorAppointments() {
+    try {
+        console.log("📋 Fetching doctor's appointments...");
+        const response = await apiRequest("/api/Appointment/doctor-appointments", "GET");
+        
+        console.log("✅ Doctor appointments retrieved:", response);
+        
+        return Array.isArray(response) ? response : response.data || [];
+    } catch (error) {
+        console.warn("⚠️ Failed to fetch doctor appointments, using mock data:", error.message);
+        return mockAppointments;
+    }
+}
+
+// ========================
+// CLINIC ENDPOINTS
+// ========================
+
+/**
+ * Fetch all clinics associated with the current doctor
+ * Returns clinic details including address, hours, and services
+ * Falls back to mock data if server is unavailable
+ * @returns {Promise<Array>} Array of clinic objects
+ */
+async function getMyClinics() {
+    try {
+        console.log("🏥 Fetching your clinics...");
+        const response = await apiRequest("/api/Clinic/my-clinics", "GET");
+        
+        console.log("✅ Your clinics retrieved:", response);
+        
+        return Array.isArray(response) ? response : response.data || [];
+    } catch (error) {
+        console.warn("⚠️ Failed to fetch clinics, using mock data:", error.message);
+        return mockClinics;
+    }
+}
+
+/**
+ * Create a new clinic for the current doctor
+ * Requires authentication token
+ * @param {Object} clinicData - Clinic information
+ * @param {string} clinicData.clinicName - Name of the clinic
+ * @param {string} clinicData.clinicPhone - Phone number
+ * @param {string} clinicData.clinicEmail - Email address
+ * @param {string} clinicData.location - Clinic location
+ * @param {string} clinicData.workingDays - Working days (e.g., "Sat-Sun-Mon")
+ * @param {string} clinicData.workStartTime - Start time (e.g., "09:00")
+ * @param {string} clinicData.workEndTime - End time (e.g., "18:00")
+ * @param {number} clinicData.doctorPrice - Consultation fee
+ * @param {number} clinicData.slotDurationMinutes - Appointment duration in minutes
+ * @returns {Promise<Object>} New clinic object with clinicId
+ */
+async function createClinic(clinicData) {
+    try {
+        console.log("🏥 Creating new clinic...", clinicData);
+        
+        // Verify authentication token exists
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("❌ Authentication required. Please login first.");
+        }
+
+        const response = await apiRequest("/api/Clinic", "POST", clinicData);
+        
+        console.log("✅ Clinic created successfully:", response);
+        
+        return response;
+    } catch (error) {
+        console.error("🔴 Failed to create clinic:", error.message);
+        throw error;
+    }
+}
+
+/**
+ * Delete a clinic by ID
+ * Requires authentication token
+ * @param {number} clinicId - The ID of the clinic to delete
+ * @returns {Promise<Object>} Deletion confirmation message
+ */
+/**
+ * Update an existing clinic by ID
+ * Requires authentication token
+ * @param {number} clinicId - The ID of the clinic to update
+ * @param {Object} clinicData - Updated clinic information
+ * @param {string} clinicData.clinicName - Name of the clinic
+ * @param {string} clinicData.clinicPhone - Phone number
+ * @param {string} clinicData.clinicEmail - Email address
+ * @param {string} clinicData.location - Clinic location
+ * @param {string} clinicData.workingDays - Working days (e.g., "Saturday,Sunday,Monday")
+ * @param {string} clinicData.workStartTime - Start time (e.g., "09:00")
+ * @param {string} clinicData.workEndTime - End time (e.g., "18:00")
+ * @param {number} clinicData.doctorPrice - Consultation fee
+ * @param {number} clinicData.slotDurationMinutes - Appointment duration in minutes
+ * @returns {Promise<Object>} Updated clinic object
+ */
+async function updateClinic(clinicId, clinicData) {
+    try {
+        console.log("✏️ Updating clinic with ID:", clinicId);
+        console.log("📝 Update data:", clinicData);
+        
+        // Verify authentication token exists
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("❌ Authentication required. Please login first.");
+        }
+
+        const response = await apiRequest(`/api/Clinic/${clinicId}`, "PUT", clinicData);
+        
+        console.log("✅ Clinic updated successfully:", response);
+        
+        return response;
+    } catch (error) {
+        console.error("🔴 Failed to update clinic:", error.message);
+        throw error;
+    }
+}
+
+async function deleteClinic(clinicId) {
+    try {
+        console.log("🗑️ Deleting clinic with ID:", clinicId);
+        
+        // Verify authentication token exists
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("❌ Authentication required. Please login first.");
+        }
+
+        const response = await apiRequest(`/api/Clinic/${clinicId}`, "DELETE");
+        
+        console.log("✅ Clinic deleted successfully:", response);
+        
+        return response;
+    } catch (error) {
+        console.error("🔴 Failed to delete clinic:", error.message);
+        throw error;
+    }
 }

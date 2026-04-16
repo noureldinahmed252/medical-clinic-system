@@ -57,32 +57,7 @@
             <form class="auth-form" id="signupForm" onsubmit="handleDoctorSignup(event)">
                     <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 18px; font-weight: 600;">Personal Information</h3>
                     
-                    <!-- Profile Photo Upload Section - Compact -->
-                    <div class="form-group photo-group">
-                        <label class="form-label">📷 Profile Photo *</label>
-                        <div class="photo-upload-compact">
-                            <!-- Photo Preview -->
-                            <div class="photo-preview-compact" id="photoPreview">
-                                <span style="font-size: 32px;">📷</span>
-                            </div>
-                            
-                            <!-- Upload Button -->
-                            <button type="button" class="photo-upload-btn" id="photoUploadArea" title="Click to upload profile photo">
-                                Choose Photo
-                            </button>
-                            
-                            <input 
-                                type="file" 
-                                id="signupPhoto" 
-                                name="photo"
-                                class="photo-input" 
-                                accept="image/*"
-                                style="display: none;">
-                        </div>
-                        <div class="photo-status" id="photoStatus" style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">
-                            No photo selected
-                        </div>
-                    </div>
+
                 
                 <div class="form-grid">
                     <div class="form-group">
@@ -144,7 +119,7 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Medical Specialty *</label><select class="form-select" id="signupSpecialty" required> <option value="">-- Select Specialty --</option>                            <option value="Vaccination">Vaccination</option>\n                            <option value="Dermatology">Dermatology</option>\n                            <option value="Psychiatry">Psychiatry</option>\n                            <option value="Pediatrics">Pediatrics</option>\n                            <option value="Orthopedics">Orthopedics</option>\n                            <option value="General Surgery">General Surgery</option>\n                            <option value="Dentistry">Dentistry</option>\n                            <option value="Obstetrics">Obstetrics</option>\n                            <option value="Gynecology">Gynecology</option>\n                            <option value="Fertility">Fertility</option>\n                            <option value="Plastic Surgery">Plastic Surgery</option>\n                            <option value="Newborn Care">Newborn Care</option>\n                        </select>                 </div>
+                        <label class="form-label">Medical Specialty *</label><select class="form-select" id="signupSpecialty" required> <option value="">-- Select Specialty --</option>                            <option value="InternalMedicine">InternalMedicine</option>\n                            <option value="Dermatology">Dermatology</option>\n                            <option value="Psychiatry">Psychiatry</option>\n                            <option value="Pediatrics">Pediatrics</option>\n                            <option value="Orthopedics">Orthopedics</option>\n                            <option value="ENT">ENT</option>\n                            <option value="Dentistry">Dentistry</option>\n                            <option value="Ophthalmology">Ophthalmology</option>\n                            <option value="Gynecology">Gynecology</option>\n                            <option value="Neurology">Neurology</option>\n                            <option value="Urology">Urology</option>\n                            <option value="Cardiology">Cardiology</option>\n                        </select>                 </div>
                     
                     <div class="form-group">
                         <label class="form-label">University Certificate *</label>
@@ -191,29 +166,7 @@
                     
                 </div>
                 
-                <h3 style="color: var(--primary); margin: 30px 0 20px; font-size: 18px; font-weight: 600;">Clinic Information</h3>
-                
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Clinic Name *</label>
-                        <input type="text" class="form-input" id="signupClinicName" placeholder="Heart Care Clinic" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Clinic Phone *</label>
-                        <input type="tel" class="form-input" id="signupClinicPhone" placeholder="+20 123 456 7890" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Clinic Address *</label>
-                    <input type="text" class="form-input" id="signupClinicAddress" placeholder="123 Medical Street, Cairo, Egypt" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Clinic Email</label>
-                    <input type="email" class="form-input" id="signupClinicEmail" placeholder="info@clinic.com">
-                </div>
+
                 
                 <button type="submit" class="auth-btn">Create Account</button>
             </form>
@@ -438,40 +391,7 @@
                 </div>
 
                 <div class="info-grid">
-                    <div class="info-card">
-                        <h3 class="info-card-title">
-                            <span>📍</span>
-                            Clinic Information
-                        </h3>
-                        <div class="info-item">
-                            <div class="info-icon">🏥</div>
-                            <div class="info-details">
-                                <div class="info-label">Clinic Name</div>
-                                <div class="info-value" id="clinicName">Heart Care Clinic</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">📍</div>
-                            <div class="info-details">
-                                <div class="info-label">Address</div>
-                                <div class="info-value" id="clinicAddress">123 Medical Street, Cairo, Egypt</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">📞</div>
-                            <div class="info-details">
-                                <div class="info-label">Phone</div>
-                                <div class="info-value" id="clinicPhone">+20 123 456 7890</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">📧</div>
-                            <div class="info-details">
-                                <div class="info-label">Email</div>
-                                <div class="info-value" id="clinicEmail">dr.ahmed@heartcare.com</div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="info-card">
                         <h3 class="info-card-title">
@@ -529,33 +449,7 @@
                         </div>
                     </div>
 
-                    <div class="info-card">
-                        <h3 class="info-card-title">
-                            <span>⏰</span>
-                            Working Hours
-                        </h3>
-                        <div class="info-item">
-                            <div class="info-icon">📅</div>
-                            <div class="info-details">
-                                <div class="info-label">Working Days</div>
-                                <div class="info-value" id="profileWorkingDays">Sunday - Thursday</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">🕐</div>
-                            <div class="info-details">
-                                <div class="info-label">Working Hours</div>
-                                <div class="info-value" id="profileWorkingHours">9:00 AM - 6:00 PM</div>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-icon">💰</div>
-                            <div class="info-details">
-                                <div class="info-label">Consultation Fee</div>
-                                <div class="info-value" id="profileConsultationFee">500 EGP</div>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div class="info-card">
                         <h3 class="info-card-title">
@@ -585,6 +479,17 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Clinics Section -->
+                <div style="margin-top: 40px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="font-size: 24px; font-weight: 700;">🏥 My Clinics</h2>
+                        <button class="btn btn-success" id="addClinicBtn" onclick="showAddClinicModal()">
+                            <span>➕</span> Add New Clinic
+                        </button>
+                    </div>
+                    <div id="clinicsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
                 </div>
             </div>
         </div>
@@ -1182,7 +1087,36 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">City</label>
-                        <input type="text" class="form-input" id="editDoctorCity" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
+                        <select class="form-select" id="editDoctorCity" required>
+                            <option value="">-- Select City --</option>
+                            <option value="Alexandria">Alexandria</option>
+                            <option value="Aswan">Aswan</option>
+                            <option value="Asyut">Asyut</option>
+                            <option value="Beheira">Beheira</option>
+                            <option value="Beni Suef">Beni Suef</option>
+                            <option value="Cairo">Cairo</option>
+                            <option value="Dakahlia">Dakahlia</option>
+                            <option value="Damietta">Damietta</option>
+                            <option value="Faiyum">Faiyum</option>
+                            <option value="Gharbia">Gharbia</option>
+                            <option value="Giza">Giza</option>
+                            <option value="Ismailia">Ismailia</option>
+                            <option value="Kafr El Sheikh">Kafr El Sheikh</option>
+                            <option value="Luxor">Luxor</option>
+                            <option value="Matrouh">Matrouh</option>
+                            <option value="Minya">Minya</option>
+                            <option value="Monufia">Monufia</option>
+                            <option value="New Valley">New Valley</option>
+                            <option value="North Sinai">North Sinai</option>
+                            <option value="Port Said">Port Said</option>
+                            <option value="Qalyubia">Qalyubia</option>
+                            <option value="Qena">Qena</option>
+                            <option value="Red Sea">Red Sea</option>
+                            <option value="Sharqia">Sharqia</option>
+                            <option value="Sohag">Sohag</option>
+                            <option value="South Sinai">South Sinai</option>
+                            <option value="Suez">Suez</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1205,88 +1139,6 @@
                         <label class="form-label">License Number</label>
                         <input type="text" class="form-input" id="editProfileLicense" readonly style="background-color: #f0f0f0; cursor: not-allowed;">
                     </div>
-                </div>
-
-                <!-- Clinic Information -->
-                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Clinic Information</h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Clinic Name *</label>
-                        <input type="text" class="form-input" id="editClinicName" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Clinic Phone *</label>
-                        <input type="tel" class="form-input" id="editClinicPhone" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Clinic Address *</label>
-                    <input type="text" class="form-input" id="editClinicAddress" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Clinic Email</label>
-                    <input type="email" class="form-input" id="editClinicEmail">
-                </div>
-
-                <!-- Working Hours & Consultation Fee -->
-                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Working Hours & Fees</h4>
-                
-                <!-- Working Days Checkboxes -->
-                <div class="form-group">
-                    <label class="form-label">Working Days</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Sat" class="editWorkingDay">
-                            <span>Saturday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Sun" class="editWorkingDay">
-                            <span>Sunday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Mon" class="editWorkingDay">
-                            <span>Monday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Tue" class="editWorkingDay">
-                            <span>Tuesday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Wed" class="editWorkingDay">
-                            <span>Wednesday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Thu" class="editWorkingDay">
-                            <span>Thursday</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
-                            <input type="checkbox" id="editWorkingDay_Fri" class="editWorkingDay">
-                            <span>Friday</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Working Hours Times -->
-                <div class="form-grid" style="margin-top: 15px;">
-                    <div class="form-group">
-                        <label class="form-label">Start Time</label>
-                        <input type="time" class="form-input" id="editWorkingHoursStart" value="09:00">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">End Time</label>
-                        <input type="time" class="form-input" id="editWorkingHoursEnd" value="18:00">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Consultation Fee (EGP)</label>
-                        <input type="number" class="form-input" id="editConsultationFee" min="0" placeholder="150">
-                    </div>
-                </div>
-
-                <!-- Education -->
-                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Education & Qualifications</h4>
-                <div class="form-group">
-                    <label class="form-label">Education/Qualifications</label>
-                    <textarea class="form-input" id="editProfileEducation" rows="2" style="resize: vertical;"></textarea>
                 </div>
 
                 <!-- Password Section -->
@@ -1313,35 +1165,137 @@
             </form>
         </div>
     </div>
+    <!-- Edit/Add Clinic Modal -->
+    <div class="modal" id="clinicModal">
+        <div class="modal-content" style="max-width: 700px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="clinicModalTitle">➕ Add New Clinic</h3>
+                <button class="modal-close" onclick="closeModal('clinicModal')">✖</button>
+            </div>
+            <form id="clinicForm" onsubmit="saveClinic(event)">
+                <input type="hidden" id="clinicEditIndex" value="-1">
+
+                <!-- Clinic Basic Info -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Clinic Information</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Clinic Name *</label>
+                        <input type="text" class="form-input" id="clinicName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Clinic Phone *</label>
+                        <input type="tel" class="form-input" id="clinicPhone" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinic Address *</label>
+                    <input type="text" class="form-input" id="clinicAddress" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinic Email</label>
+                    <input type="email" class="form-input" id="clinicEmail">
+                </div>
+
+                <!-- Working Hours & Operations -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Working Hours</h4>
+                
+                <!-- Working Days Checkboxes -->
+                <div class="form-group">
+                    <label class="form-label">Working Days</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; padding: 10px; background: #f9f9f9; border-radius: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Saturday">
+                            <span>Saturday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Sunday">
+                            <span>Sunday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Monday">
+                            <span>Monday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Tuesday">
+                            <span>Tuesday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Wednesday">
+                            <span>Wednesday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Thursday">
+                            <span>Thursday</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                            <input type="checkbox" class="clinicWorkingDay" data-day="Friday">
+                            <span>Friday</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Working Hours Times -->
+                <div class="form-grid" style="margin-top: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Start Time *</label>
+                        <input type="time" class="form-input" id="clinicStartTime" value="09:00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time *</label>
+                        <input type="time" class="form-input" id="clinicEndTime" value="18:00" required>
+                    </div>
+                </div>
+
+                <!-- Consultation Settings -->
+                <h4 style="color: var(--primary); margin: 15px 0 10px; font-weight: 600;">Consultation Settings</h4>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Consultation Fee (EGP) *</label>
+                        <input type="number" class="form-input" id="clinicConsultationFee" min="0" placeholder="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Consultation Duration (minutes) *</label>
+                        <input type="number" class="form-input" id="clinicConsultationDuration" min="5" placeholder="30" required>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('clinicModal')">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="deleteClinicBtn" onclick="deleteSelectedClinic()" style="display: none; margin-left: auto;">
+                        <span>🗑️</span> Delete Clinic
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="clinicSubmitBtn">Add Clinic</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- 1. Api: كل الاتصال بالباك اند -->
 <script src="js/api.js"></script>
 
-<!-- 2. UI: theme, modals, toast -->
-<script src="js/ui.js"></script>
-
-<!-- 3. Profile: تعديل بيانات الطبيب - MUST BE BEFORE AUTH -->
-<script src="js/profile.js"></script>
-
-<!-- 4. Auth: login, signup, logout -->
+<!-- 2. Auth: login, signup, logout - MUST BE BEFORE MAIN -->
 <script src="js/auth.js"></script>
 
-<!-- 5. Patients: إضافة المرضى، تعديلهم، البحث -->
+<!-- 3. Main: global state -->
+<script src="js/main.js"></script>
+
+<!-- 4. UI: theme, modals, toast -->
+<script src="js/ui.js"></script>
+
+<!-- 5. Profile: تعديل بيانات الطبيب -->
+<script src="js/profile.js"></script>
+
+<!-- 6. Patients: إضافة المرضى، تعديلهم، البحث -->
 <script src="js/patients.js"></script>
 
-<!-- 6. Appointments: المواعيد، الكالندر، confirm, startConsultation -->
+<!-- 7. Appointments: المواعيد، الكالندر، confirm, startConsultation -->
 <script src="js/appointments.js"></script>
 
-<!-- 7. Diseases Data: قائمة الأمراض + searchDiseases -->
+<!-- 8. Diseases Data: قائمة الأمراض + searchDiseases -->
 <script src="js/diseasesData.js"></script>
 
-<!-- 8. Consultation: تشخيص المرض، selectDiseases، saveConsultation -->
+<!-- 9. Consultation: تشخيص المرض، selectDiseases، saveConsultation -->
 <script src="js/consultation.js"></script>
-
-<!-- 9. Patients: إضافة المرضى، تعديلهم، البحث -->
-<script src="js/patients.js"></script>
-
-<!-- 10. Main: global state + DOMContentLoaded + loadDefaultData -->
-<script src="js/main.js"></script>
 
 </body>
 </html>

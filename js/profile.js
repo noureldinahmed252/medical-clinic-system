@@ -15,64 +15,36 @@
             document.getElementById('editProfileCertificate').value = doctorProfile.certificate || '';
             document.getElementById('editProfileLicense').value = doctorProfile.licenseNumber || '';
             
-            document.getElementById('editClinicName').value = doctorProfile.clinicName || '';
-            document.getElementById('editClinicPhone').value = doctorProfile.clinicPhone || '';
-            document.getElementById('editClinicAddress').value = doctorProfile.clinicLocation || doctorProfile.clinicAddress || '';
-            document.getElementById('editClinicEmail').value = doctorProfile.clinicEmail || '';
-            
             document.getElementById('editCurrentPassword').value = '';
             document.getElementById('editNewPassword').value = '';
             document.getElementById('editConfirmPassword').value = '';
             
-            // Uncheck all working days first
-            document.querySelectorAll('.editWorkingDay').forEach(cb => cb.checked = false);
+            // Set profile photo preview - load from API if available
+            const profilePhotoPreview = document.getElementById('profilePhotoPreview');
+            const fileInput = document.getElementById('profilePhotoInput');
             
-            // Check the selected working days
-            if (doctorProfile.workingDays && doctorProfile.workingDays !== 'Not specified' && doctorProfile.workingDays !== null) {
-                const daysArray = Array.isArray(doctorProfile.workingDays) 
-                    ? doctorProfile.workingDays 
-                    : doctorProfile.workingDays.split(', ');
-                const daysMap = {
-                    'Sat': 'editWorkingDay_Sat',
-                    'Sun': 'editWorkingDay_Sun',
-                    'Mon': 'editWorkingDay_Mon',
-                    'Tue': 'editWorkingDay_Tue',
-                    'Wed': 'editWorkingDay_Wed',
-                    'Thu': 'editWorkingDay_Thu',
-                    'Fri': 'editWorkingDay_Fri'
-                };
-                daysArray.forEach(day => {
-                    const checkboxId = daysMap[day.trim()];
-                    if (checkboxId && document.getElementById(checkboxId)) {
-                        document.getElementById(checkboxId).checked = true;
-                    }
-                });
+            // Reset file input
+            if (fileInput) {
+                fileInput.value = '';
             }
             
-            // Set working hours time inputs
-            if (doctorProfile.workingHours && doctorProfile.workingHours !== 'Not specified' && doctorProfile.workingHours !== null) {
-                const timeParts = doctorProfile.workingHours.split(' - ');
-                if (timeParts.length === 2) {
-                    const startTimeEl = document.getElementById('editWorkingHoursStart');
-                    const endTimeEl = document.getElementById('editWorkingHoursEnd');
-                    if (startTimeEl) startTimeEl.value = timeParts[0].trim();
-                    if (endTimeEl) endTimeEl.value = timeParts[1].trim();
-                }
-            } else {
-                document.getElementById('editWorkingHoursStart').value = '09:00';
-                document.getElementById('editWorkingHoursEnd').value = '18:00';
-            }
-            
-            // Set consultation fee - use either consultationFee or doctorPrice
-            const consultationFeeEl = document.getElementById('editConsultationFee');
-            if (consultationFeeEl) {
-                consultationFeeEl.value = doctorProfile.consultationFee || doctorProfile.doctorPrice || '';
-            }
-            
-            // Set profile photo preview if exists
-            if (doctorProfile.photo || doctorProfile.doctorImage) {
-                const photoUrl = doctorProfile.photo || doctorProfile.doctorImage;
-                document.getElementById('profilePhotoPreview').style.backgroundImage = `url(${photoUrl})`;
+            // Load current photo from API
+            if (doctorProfile.doctorId && profilePhotoPreview) {
+                console.log("📸 Loading current profile photo from API...");
+                getDoctorImage(doctorProfile.doctorId)
+                    .then(imageUrl => {
+                        console.log("✅ Current photo loaded for preview:", imageUrl);
+                        profilePhotoPreview.style.backgroundImage = `url(${imageUrl})`;
+                        profilePhotoPreview.style.backgroundSize = 'cover';
+                        profilePhotoPreview.style.backgroundPosition = 'center';
+                        profilePhotoPreview.textContent = '';
+                    })
+                    .catch(error => {
+                        console.warn("⚠️ Could not load current photo:", error);
+                        // Show emoji if no photo
+                        profilePhotoPreview.style.backgroundImage = 'none';
+                        profilePhotoPreview.textContent = '👨‍⚕️';
+                    });
             }
             
             openModal('editProfileModal');
@@ -90,7 +62,8 @@
                     preview.style.backgroundSize = 'cover';
                     preview.style.backgroundPosition = 'center';
                     preview.textContent = '';
-                    doctorProfile.photo = e.target.result;
+                    // Don't store DataURL in doctorProfile - it will be uploaded separately to API
+                    console.log("📸 Photo preview loaded, ready to upload");
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             }
@@ -104,6 +77,37 @@
             console.log("📌 doctorProfile.name:", doctorProfile.name);
             console.log("📌 doctorProfile.email:", doctorProfile.email);
             console.log("📌 doctorProfile.clinicName:", doctorProfile.clinicName);
+            
+            // ===== FETCH CLINICS FROM API =====
+            console.log("📡 Fetching clinics from API...");
+            getMyClinics()
+                .then(apiClinics => {
+                    console.log("✅ Clinics from API:", apiClinics);
+                    
+                    // Convert API format to local format
+                    doctorClinics = apiClinics.map(clinic => ({
+                        name: clinic.clinicName,
+                        phone: clinic.clinicPhone,
+                        address: clinic.location,
+                        email: clinic.clinicEmail,
+                        startTime: clinic.workStartTime,
+                        endTime: clinic.workEndTime,
+                        consultationFee: clinic.doctorPrice,
+                        consultationDuration: clinic.slotDurationMinutes,
+                        workingDays: clinic.workingDays
+                            ? clinic.workingDays.split(',').map(day => day.trim())
+                            : [],
+                        clinicId: clinic.clinicId  // Store server ID
+                    }));
+                    
+                    console.log("🔄 Converted clinics to local format:", doctorClinics);
+                    renderClinics();
+                })
+                .catch(error => {
+                    console.error("⚠️ Failed to fetch clinics from API:", error);
+                    doctorClinics = [];  // Empty array if API fails
+                    renderClinics();
+                });
             
             // ===== BASIC INFO =====
             const name = doctorProfile.name || "Unknown";
@@ -120,25 +124,31 @@
             // Update profile avatar with photo if available
             const profileAvatar = document.querySelector('.profile-avatar');
             console.log("🖼️ Profile avatar element:", profileAvatar);
-            console.log("🖼️ doctorProfile.photo:", doctorProfile.photo);
-            console.log("🖼️ doctorProfile.doctorImage:", doctorProfile.doctorImage);
+            console.log("🖼️ doctorProfile.doctorId:", doctorProfile.doctorId);
             
-            if (profileAvatar) {
-                if (doctorProfile.photo) {
-                    console.log("✅ Setting photo from doctorProfile.photo");
-                    profileAvatar.style.backgroundImage = `url(${doctorProfile.photo})`;
-                    profileAvatar.style.backgroundSize = 'cover';
-                    profileAvatar.style.backgroundPosition = 'center';
-                    profileAvatar.textContent = '';
-                } else if (doctorProfile.doctorImage) {
-                    console.log("✅ Setting photo from doctorProfile.doctorImage");
-                    profileAvatar.style.backgroundImage = `url(${doctorProfile.doctorImage})`;
-                    profileAvatar.style.backgroundSize = 'cover';
-                    profileAvatar.style.backgroundPosition = 'center';
-                    profileAvatar.textContent = '';
-                } else {
-                    console.log("❌ No photo available");
-                }
+            if (profileAvatar && doctorProfile.doctorId) {
+                // Fetch image from API using GET /api/DoctorProfile/{doctorId}/image
+                console.log("📸 Fetching profile image from API...");
+                getDoctorImage(doctorProfile.doctorId)
+                    .then(imageUrl => {
+                        console.log("✅ Profile image loaded from API:", imageUrl);
+                        profileAvatar.style.backgroundImage = `url(${imageUrl})`;
+                        profileAvatar.style.backgroundSize = 'cover';
+                        profileAvatar.style.backgroundPosition = 'center';
+                        profileAvatar.textContent = '';
+                        
+                        // Update doctorProfile.photo for modal preview
+                        doctorProfile.photo = imageUrl;
+                        doctorProfile.doctorImage = imageUrl;
+                    })
+                    .catch(error => {
+                        console.warn("⚠️ Could not load profile image:", error);
+                        // Keep default doctor emoji
+                        profileAvatar.textContent = '👨‍⚕️';
+                    });
+            } else if (profileAvatar && !doctorProfile.doctorId) {
+                console.warn("⚠️ No doctorId available for image fetch");
+                profileAvatar.textContent = '👨‍⚕️';
             }
             
             // ===== DOCTOR INFORMATION SECTION =====
@@ -162,20 +172,6 @@
             document.getElementById('profileRating').textContent = rating;
             document.getElementById('profileAppointments').textContent = appointments.length || "0";
             
-            // ===== WORKING HOURS SECTION =====
-            let workingDaysDisplay = doctorProfile.workingDays || 'Not specified';
-            if (Array.isArray(doctorProfile.workingDays)) {
-                workingDaysDisplay = doctorProfile.workingDays.join(', ');
-            }
-            document.getElementById('profileWorkingDays').textContent = workingDaysDisplay;
-            
-            let workingHoursDisplay = doctorProfile.workingHours || 'Not specified';
-            document.getElementById('profileWorkingHours').textContent = workingHoursDisplay;
-            
-            // ===== CONSULTATION FEE =====
-            const consultationFee = doctorProfile.consultationFee || doctorProfile.doctorPrice || 0;
-            document.getElementById('profileConsultationFee').textContent = consultationFee ? `${consultationFee} EGP` : 'Not specified';
-            
             // ===== MONTHLY STATS =====
             document.getElementById('statsTotalPatients').textContent = patients.length || "0";
             
@@ -184,6 +180,9 @@
             document.getElementById('statsMonthAppointments').textContent = monthAppointments.length || "0";
             
             console.log("✅ Profile page updated successfully");
+            
+            // Render clinics is called from getMyClinics() promise chain above
+            // No need to call it again here
         }
 
         // Save Profile
@@ -235,68 +234,20 @@
             }
 
             try {
-                // Create FormData with exact API field names
-                const formData = new FormData();
-                
-                // Personal Information
-                formData.append('DoctorName', document.getElementById('editDoctorName').value);
-                formData.append('DoctorPhone', document.getElementById('editDoctorPhone').value);
-                formData.append('DoctorEmail', document.getElementById('editDoctorEmail').value);
-                formData.append('DoctorCity', document.getElementById('editDoctorCity').value);
-                
-                // Professional Details
-                formData.append('Certificate', document.getElementById('editProfileCertificate').value);
-                formData.append('DoctorPrice', document.getElementById('editConsultationFee').value || 0);
-                
-                // Specialty (SpecialtyId if we have it, otherwise use the value)
-                const specialtyEl = document.getElementById('editDoctorSpecialty');
-                if (specialtyEl && doctorProfile.specialtyId) {
-                    formData.append('SpecialtyId', doctorProfile.specialtyId);
-                }
-                
-                // Clinic Information
-                formData.append('ClinicName', document.getElementById('editClinicName').value);
-                formData.append('ClinicPhone', document.getElementById('editClinicPhone').value);
-                formData.append('ClinicEmail', document.getElementById('editClinicEmail').value);
-                formData.append('ClinicLocation', document.getElementById('editClinicAddress').value);
-                
-                // Working Hours/Days
-                const startTimeEl = document.getElementById('editWorkingHoursStart');
-                const endTimeEl = document.getElementById('editWorkingHoursEnd');
-                if (startTimeEl && endTimeEl && startTimeEl.value && endTimeEl.value) {
-                    formData.append('WorkingHours', `${startTimeEl.value} - ${endTimeEl.value}`);
-                }
-                
-                // Working Days
-                const daysMap = {
-                    'Sat': 'editWorkingDay_Sat',
-                    'Sun': 'editWorkingDay_Sun',
-                    'Mon': 'editWorkingDay_Mon',
-                    'Tue': 'editWorkingDay_Tue',
-                    'Wed': 'editWorkingDay_Wed',
-                    'Thu': 'editWorkingDay_Thu',
-                    'Fri': 'editWorkingDay_Fri'
+                // Create object with exact API field names
+                const profileData = {
+                    doctorName: document.getElementById('editDoctorName').value,
+                    doctorPhone: document.getElementById('editDoctorPhone').value,
+                    doctorEmail: document.getElementById('editDoctorEmail').value,
+                    doctorCity: document.getElementById('editDoctorCity').value,
+                    currentPassword: currentPassword,
+                    newPassword: newPassword || currentPassword
                 };
-                const selectedDays = Object.entries(daysMap)
-                    .filter(([_, id]) => document.getElementById(id) && document.getElementById(id).checked)
-                    .map(([day]) => day);
-                if (selectedDays.length > 0) {
-                    formData.append('WorkingDays', selectedDays.join(', '));
-                }
                 
-                // Password fields - REQUIRED by Backend
-                // Backend requires both CurrentPassword and NewPassword for any profile update
-                formData.append('CurrentPassword', currentPassword);
+                console.log("📋 Profile data prepared for API:", profileData);
                 
-                // If user provided new password, send it; otherwise send current password (no change)
-                const passwordToSend = newPassword || currentPassword;
-                formData.append('NewPassword', passwordToSend);
-                
-                console.log("📋 FormData prepared for API");
-                console.log("🔐 Password fields: CurrentPassword=[present], NewPassword=[present]");
-                
-                // Send to API
-                const updateResponse = await apiUpdateProfile(doctorProfile.doctorId, formData);
+                // Send to API directly as the field mapping
+                const updateResponse = await apiRequest(`/api/DoctorProfile/${doctorProfile.doctorId}`, "PUT", profileData);
                 console.log("✅ Profile updated response:", updateResponse);
                 
                 // Update local doctorProfile with new values
@@ -305,22 +256,34 @@
                 doctorProfile.email = document.getElementById('editDoctorEmail').value;
                 doctorProfile.city = document.getElementById('editDoctorCity').value;
                 doctorProfile.certificate = document.getElementById('editProfileCertificate').value;
-                doctorProfile.consultationFee = parseInt(document.getElementById('editConsultationFee').value) || 0;
-                doctorProfile.clinicName = document.getElementById('editClinicName').value;
-                doctorProfile.clinicPhone = document.getElementById('editClinicPhone').value;
-                doctorProfile.clinicEmail = document.getElementById('editClinicEmail').value;
-                doctorProfile.clinicAddress = document.getElementById('editClinicAddress').value;
-                doctorProfile.clinicLocation = document.getElementById('editClinicAddress').value;
-                
-                if (selectedDays.length > 0) {
-                    doctorProfile.workingDays = selectedDays.join(', ');
-                }
-                
-                if (startTimeEl && endTimeEl && startTimeEl.value && endTimeEl.value) {
-                    doctorProfile.workingHours = `${startTimeEl.value} - ${endTimeEl.value}`;
-                }
                 
                 console.log("✅ Local doctorProfile updated");
+                
+                // ===== UPLOAD PROFILE IMAGE IF SELECTED =====
+                const profilePhotoInput = document.getElementById('profilePhotoInput');
+                if (profilePhotoInput && profilePhotoInput.files && profilePhotoInput.files[0]) {
+                    console.log("📸 Profile image selected, uploading to API...");
+                    try {
+                        const imageFile = profilePhotoInput.files[0];
+                        const imageResponse = await uploadDoctorProfileImage(doctorProfile.doctorId, imageFile);
+                        console.log("✅ Image uploaded successfully:", imageResponse);
+                        
+                        // Clear the file input after successful upload
+                        profilePhotoInput.value = '';
+                        
+                        // Refresh image from API to ensure latest version is displayed
+                        getDoctorImage(doctorProfile.doctorId)
+                            .then(imageUrl => {
+                                doctorProfile.photo = imageUrl;
+                                doctorProfile.doctorImage = imageUrl;
+                                console.log("🖼️ doctorProfile.photo renewed from API:", imageUrl);
+                            })
+                            .catch(err => console.warn("⚠️ Could not refresh image:", err));
+                    } catch (imageError) {
+                        console.error("⚠️ Image upload failed (profile data saved):", imageError);
+                        showToast('⚠️ Profile updated but image upload failed', 'warning', String(imageError?.message || 'Try uploading image again'));
+                    }
+                }
                 
                 closeModal('editProfileModal');
                 showToast('✅ Profile updated successfully!', 'success', 'Changes saved to server');
@@ -342,4 +305,447 @@
                     saveBtn.innerHTML = 'Save Changes';
                 }
             }
+        }
+        // ===== CLINICS MANAGEMENT =====
+        
+        function showAddClinicModal() {
+            console.log("📝 Opening add clinic modal");
+            
+            // Check if already at max clinics
+            if (doctorClinics.length >= 3) {
+                showToast('⚠️ You can only have a maximum of 3 clinics', 'warning');
+                return;
+            }
+            
+            // Reset form
+            document.getElementById('clinicForm').reset();
+            document.getElementById('clinicEditIndex').value = '-1';
+            document.getElementById('clinicModalTitle').textContent = '➕ Add New Clinic';
+            document.getElementById('deleteClinicBtn').style.display = 'none';
+            document.getElementById('clinicSubmitBtn').textContent = 'Add Clinic';
+            
+            // Uncheck all working days
+            document.querySelectorAll('.clinicWorkingDay').forEach(cb => cb.checked = false);
+            
+            // Set default times
+            document.getElementById('clinicStartTime').value = '09:00';
+            document.getElementById('clinicEndTime').value = '18:00';
+            
+            openModal('clinicModal');
+        }
+
+        function showEditClinicModal(index) {
+            console.log("📝 Opening edit clinic modal for index:", index);
+            
+            const clinic = doctorClinics[index];
+            if (!clinic) {
+                showToast('❌ Clinic not found', 'error');
+                return;
+            }
+            
+            // Fill form with clinic data
+            document.getElementById('clinicName').value = clinic.name || '';
+            document.getElementById('clinicPhone').value = clinic.phone || '';
+            document.getElementById('clinicAddress').value = clinic.address || '';
+            document.getElementById('clinicEmail').value = clinic.email || '';
+            document.getElementById('clinicStartTime').value = clinic.startTime || '09:00';
+            document.getElementById('clinicEndTime').value = clinic.endTime || '18:00';
+            document.getElementById('clinicConsultationFee').value = clinic.consultationFee || '';
+            document.getElementById('clinicConsultationDuration').value = clinic.consultationDuration || '30';
+            document.getElementById('clinicEditIndex').value = index;
+            
+            // Check working days
+            const workingDaysArray = Array.isArray(clinic.workingDays) 
+                ? clinic.workingDays 
+                : clinic.workingDays?.split(',').map(d => d.trim()) || [];
+            
+            document.querySelectorAll('.clinicWorkingDay').forEach(cb => {
+                cb.checked = workingDaysArray.includes(cb.getAttribute('data-day'));
+            });
+            
+            // Update modal title and buttons
+            document.getElementById('clinicModalTitle').textContent = '✏️ Edit Clinic';
+            document.getElementById('deleteClinicBtn').style.display = 'block';
+            document.getElementById('clinicSubmitBtn').textContent = 'Save Changes';
+            
+            openModal('clinicModal');
+        }
+
+        function saveClinic(e) {
+            e.preventDefault();
+            console.log("💾 Saving clinic...");
+            
+            // ===== AUTHENTICATION CHECK =====
+            const token = localStorage.getItem("authToken");
+            if (!token) {
+                showToast('❌ Please login first to add clinic', 'error');
+                console.error("❌ No authentication token found");
+                return;
+            }
+            
+            const editIndex = parseInt(document.getElementById('clinicEditIndex').value);
+            const isEditing = editIndex >= 0;
+            
+            // Get form values
+            const name = document.getElementById('clinicName').value.trim();
+            const phone = document.getElementById('clinicPhone').value.trim();
+            const address = document.getElementById('clinicAddress').value.trim();
+            const email = document.getElementById('clinicEmail').value.trim();
+            const startTime = document.getElementById('clinicStartTime').value;
+            const endTime = document.getElementById('clinicEndTime').value;
+            const fee = parseInt(document.getElementById('clinicConsultationFee').value) || 0;
+            const duration = parseInt(document.getElementById('clinicConsultationDuration').value) || 30;
+            
+            // Validate
+            if (!name || !phone || !address || !startTime || !endTime || !fee) {
+                showToast('❌ Please fill all required fields', 'error');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (email && !emailRegex.test(email)) {
+                showToast('❌ Invalid email address', 'error');
+                return;
+            }
+            
+            // Validate end time is after start time
+            if (endTime <= startTime) {
+                showToast('❌ End time must be after start time', 'error');
+                return;
+            }
+            
+            // Get working days
+            const workingDays = Array.from(document.querySelectorAll('.clinicWorkingDay:checked'))
+                .map(cb => cb.getAttribute('data-day'));
+            
+            if (workingDays.length === 0) {
+                showToast('❌ Please select at least one working day', 'error');
+                return;
+            }
+            
+            // Check for time conflicts with other clinics
+            // IMPORTANT: Only prevent conflict if there's an overlap in BOTH time AND days
+            for (let i = 0; i < doctorClinics.length; i++) {
+                if (isEditing && i === editIndex) continue; // Skip current clinic if editing
+                
+                const otherClinic = doctorClinics[i];
+                
+                // Convert other clinic's workingDays to array if it's a string
+                const otherDays = Array.isArray(otherClinic.workingDays) 
+                    ? otherClinic.workingDays 
+                    : (otherClinic.workingDays?.split(',').map(d => d.trim()) || []);
+                
+                // Check if any working day overlaps between this clinic and the other clinic
+                const sharedDays = workingDays.filter(day => otherDays.includes(day));
+                
+                // Only check time conflict if there are shared days
+                if (sharedDays.length > 0) {
+                    const currentStart = parseInt(startTime.replace(':', ''));
+                    const currentEnd = parseInt(endTime.replace(':', ''));
+                    const otherStart = parseInt(otherClinic.startTime.replace(':', ''));
+                    const otherEnd = parseInt(otherClinic.endTime.replace(':', ''));
+                    
+                    // Check if there's any time overlap
+                    if (!(currentEnd <= otherStart || currentStart >= otherEnd)) {
+                        showToast(`⚠️ You cannot work the same hours (${startTime}-${endTime}) on ${sharedDays.join(', ')} as in "${otherClinic.name}" clinic`, 'warning');
+                        return;
+                    }
+                }
+            }
+            
+            // Check max clinics (only if adding new)
+            if (!isEditing && doctorClinics.length >= 3) {
+                showToast('❌ Maximum 3 clinics allowed', 'error');
+                return;
+            }
+            
+            // Create clinic object with API format
+            const clinicData = {
+                clinicName: name,
+                clinicPhone: phone,
+                clinicEmail: email,
+                location: address,
+                workingDays: workingDays.join(','),  // Send as string: "Saturday,Sunday,Monday,..."
+                workStartTime: startTime,
+                workEndTime: endTime,
+                doctorPrice: fee,
+                slotDurationMinutes: duration
+            };
+            
+            console.log("📝 Clinic data prepared for API:", clinicData);
+            
+            // Get submit button
+            const submitBtn = document.getElementById('clinicSubmitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '⏳ Saving...';
+            }
+            
+            // Save or update
+            if (isEditing) {
+                // For editing existing clinic
+                const clinic = doctorClinics[editIndex];
+                
+                if (clinic.clinicId) {
+                    // If clinic has server ID, update on server
+                    console.log("📤 Sending clinic update to API with ID:", clinic.clinicId);
+                    
+                    updateClinic(clinic.clinicId, clinicData)
+                        .then(response => {
+                            console.log("✅ Clinic updated on server:", response);
+                            
+                            // Update local array
+                            doctorClinics[editIndex] = {
+                                name,
+                                phone,
+                                address,
+                                email,
+                                startTime,
+                                endTime,
+                                consultationFee: fee,
+                                consultationDuration: duration,
+                                workingDays,
+                                clinicId: clinic.clinicId  // Preserve server ID
+                            };
+                            
+                            console.log("✅ Clinic updated at index:", editIndex);
+                            showToast('✅ Clinic updated successfully!', 'success');
+                            
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = 'Save Changes';
+                            }
+                            
+                            closeModal('clinicModal');
+                            updateProfilePage();
+                            renderClinics();
+                        })
+                        .catch(error => {
+                            console.error("❌ Failed to update clinic:", error);
+                            showToast(`❌ Failed to update clinic: ${error.message}`, 'error');
+                            
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = 'Save Changes';
+                            }
+                        });
+                } else {
+                    // If no server ID, just update locally
+                    doctorClinics[editIndex] = {
+                        name,
+                        phone,
+                        address,
+                        email,
+                        startTime,
+                        endTime,
+                        consultationFee: fee,
+                        consultationDuration: duration,
+                        workingDays,
+                        clinicId: clinic.clinicId  // Keep as undefined if not set
+                    };
+                    console.log("✅ Clinic updated at index:", editIndex);
+                    showToast('✅ Clinic updated successfully!', 'success');
+                    
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Save Changes';
+                    }
+                    
+                    closeModal('clinicModal');
+                    updateProfilePage();
+                }
+            } else {
+                // For new clinic, send to API
+                createClinic(clinicData)
+                    .then(response => {
+                        console.log("✅ Clinic created on server:", response);
+                        
+                        // Add to local array with all data
+                        const newClinic = {
+                            name,
+                            phone,
+                            address,
+                            email,
+                            startTime,
+                            endTime,
+                            consultationFee: fee,
+                            consultationDuration: duration,
+                            workingDays,
+                            clinicId: response.clinicId  // Store server ID
+                        };
+                        
+                        doctorClinics.push(newClinic);
+                        console.log("✅ Clinic added to local array");
+                        
+                        showToast('✅ Clinic added successfully!', 'success');
+                        
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = 'Add Clinic';
+                        }
+                        
+                        closeModal('clinicModal');
+                        updateProfilePage();
+                        renderClinics();
+                    })
+                    .catch(error => {
+                        console.error("❌ Failed to create clinic:", error);
+                        showToast(`❌ Failed to add clinic: ${error.message}`, 'error');
+                        
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = 'Add Clinic';
+                        }
+                    });
+            }
+        }
+
+        function deleteSelectedClinic() {
+            const editIndex = parseInt(document.getElementById('clinicEditIndex').value);
+            
+            if (editIndex < 0) {
+                showToast('❌ No clinic selected', 'error');
+                return;
+            }
+            
+            const clinic = doctorClinics[editIndex];
+            if (!clinic) {
+                showToast('❌ Clinic not found', 'error');
+                return;
+            }
+            
+            if (confirm('🗑️ Are you sure you want to delete this clinic?')) {
+                // Check if clinic has a server ID
+                if (clinic.clinicId) {
+                    // Delete from server
+                    deleteClinic(clinic.clinicId)
+                        .then(response => {
+                            console.log("✅ Clinic deleted from server:", response);
+                            
+                            // Delete from local array
+                            doctorClinics.splice(editIndex, 1);
+                            console.log("✅ Clinic removed from local array");
+                            
+                            showToast('✅ Clinic deleted successfully!', 'success');
+                            closeModal('clinicModal');
+                            updateProfilePage();
+                        })
+                        .catch(error => {
+                            console.error("❌ Failed to delete clinic from server:", error);
+                            showToast(`❌ Failed to delete clinic: ${error.message}`, 'error');
+                        });
+                } else {
+                    // If no server ID, just delete locally (for clinics added but not saved to server yet)
+                    doctorClinics.splice(editIndex, 1);
+                    console.log("✅ Clinic deleted from index:", editIndex);
+                    showToast('✅ Clinic deleted successfully!', 'success');
+                    closeModal('clinicModal');
+                    renderClinics();
+                }
+            }
+        }
+
+        function renderClinics() {
+            console.log("🎨 Rendering clinics...", doctorClinics);
+            
+            const container = document.getElementById('clinicsContainer');
+            const addClinicBtn = document.getElementById('addClinicBtn');
+            
+            if (!container) {
+                console.error("❌ Clinics container not found");
+                return;
+            }
+            
+            // Update Add Clinic button state
+            if (addClinicBtn) {
+                if (doctorClinics.length >= 3) {
+                    addClinicBtn.disabled = true;
+                    addClinicBtn.style.opacity = '0.5';
+                    addClinicBtn.title = 'Maximum 3 clinics allowed';
+                } else {
+                    addClinicBtn.disabled = false;
+                    addClinicBtn.style.opacity = '1';
+                    addClinicBtn.title = '';
+                }
+            }
+            
+            // Clear container
+            container.innerHTML = '';
+            
+            if (doctorClinics.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); grid-column: 1/-1; padding: 20px;">No clinics added yet. Click "Add New Clinic" to get started.</p>';
+                return;
+            }
+            
+            // Render each clinic as info-card style
+            doctorClinics.forEach((clinic, index) => {
+                const clinicCard = document.createElement('div');
+                clinicCard.className = 'info-card';
+                clinicCard.style.position = 'relative';
+                
+                const editBtn = `<button class="btn btn-primary btn-sm" onclick="showEditClinicModal(${index})" style="margin-top: 12px; width: 100%;">✏️ Edit Clinic</button>`;
+                
+                clinicCard.innerHTML = `
+                    <h3 class="info-card-title">
+                        <span>🏥</span>
+                        ${clinic.name}
+                    </h3>
+                    <div class="info-item">
+                        <div class="info-icon">📍</div>
+                        <div class="info-details">
+                            <div class="info-label">Address</div>
+                            <div class="info-value">${clinic.address}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">📞</div>
+                        <div class="info-details">
+                            <div class="info-label">Phone</div>
+                            <div class="info-value">${clinic.phone}</div>
+                        </div>
+                    </div>
+                    ${clinic.email ? `
+                    <div class="info-item">
+                        <div class="info-icon">📧</div>
+                        <div class="info-details">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">${clinic.email}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-details">
+                            <div class="info-label">Working Days</div>
+                            <div class="info-value">${Array.isArray(clinic.workingDays) ? clinic.workingDays.join(', ') : clinic.workingDays}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">🕐</div>
+                        <div class="info-details">
+                            <div class="info-label">Working Hours</div>
+                            <div class="info-value">${clinic.startTime} - ${clinic.endTime}</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">💰</div>
+                        <div class="info-details">
+                            <div class="info-label">Consultation Fee</div>
+                            <div class="info-value">${clinic.consultationFee} EGP</div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">⏱️</div>
+                        <div class="info-details">
+                            <div class="info-label">Consultation Duration</div>
+                            <div class="info-value">${clinic.consultationDuration} minutes</div>
+                        </div>
+                    </div>
+                    ${editBtn}
+                `;
+                container.appendChild(clinicCard);
+            });
+            
+            console.log("✅ Clinics rendered");
         }

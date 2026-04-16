@@ -74,6 +74,8 @@ function showToast(message, type = 'success', title = '') {
         }
         // Navigation
         function showPage(page) {
+            console.log("📄 showPage called for:", page);
+            
             document.querySelectorAll('[id$="Page"]').forEach(p => p.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             
@@ -84,10 +86,28 @@ function showToast(message, type = 'success', title = '') {
                 'profile': 3
             };
             
-            document.getElementById(page + 'Page').classList.remove('hidden');
-            document.querySelectorAll('.nav-btn')[pageMap[page]].classList.add('active');
+            const pageElement = document.getElementById(page + 'Page');
+            if (pageElement) {
+                pageElement.classList.remove('hidden');
+                console.log("✅ Page element shown:", page + 'Page');
+            }
             
-            if (page === 'calendar') renderCalendar();
-            if (page === 'patients') renderPatientsTable();
-            if (page === 'profile') updateProfilePage();
+            const navBtns = document.querySelectorAll('.nav-btn');
+            if (navBtns && navBtns[pageMap[page]]) {
+                navBtns[pageMap[page]].classList.add('active');
+            }
+            
+            if (page === 'calendar') {
+                console.log("🎨 About to render calendar");
+                renderCalendar();
+                console.log("✅ Calendar rendered");
+            }
+            if (page === 'patients') {
+                console.log("📋 About to render patients table");
+                renderPatientsTable();
+            }
+            if (page === 'profile') {
+                console.log("👤 About to update profile page");
+                updateProfilePage();
+            }
         }
