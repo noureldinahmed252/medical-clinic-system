@@ -119,7 +119,7 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Medical Specialty *</label><select class="form-select" id="signupSpecialty" required> <option value="">-- Select Specialty --</option>                            <option value="InternalMedicine">InternalMedicine</option>\n                            <option value="Dermatology">Dermatology</option>\n                            <option value="Psychiatry">Psychiatry</option>\n                            <option value="Pediatrics">Pediatrics</option>\n                            <option value="Orthopedics">Orthopedics</option>\n                            <option value="ENT">ENT</option>\n                            <option value="Dentistry">Dentistry</option>\n                            <option value="Ophthalmology">Ophthalmology</option>\n                            <option value="Gynecology">Gynecology</option>\n                            <option value="Neurology">Neurology</option>\n                            <option value="Urology">Urology</option>\n                            <option value="Cardiology">Cardiology</option>\n                        </select>                 </div>
+                        <label class="form-label">Medical Specialty *</label><select class="form-select" id="signupSpecialty" required> <option value="">-- Select Specialty --</option>                            <option value="InternalMedicine">InternalMedicine</option>\n                            <option value="Dermatology">Dermatology</option>\n                            <option value="Psychiatry">Psychiatry</option>\n                            <option value="Pediatrics">Pediatrics</option>\n                            <option value="Orthopedics">Orthopedics</option>\n                            <option value="ENT (Ear, Nose, and Throat)">ENT (Ear, Nose, and Throat)</option>\n                            <option value="Dentistry">Dentistry</option>\n                            <option value="Ophthalmology">Ophthalmology</option>\n                            <option value="Gynecology">Gynecology</option>\n                            <option value="Neurology">Neurology</option>\n                            <option value="Urology">Urology</option>\n                            <option value="Cardiology">Cardiology</option>\n                        </select>                 </div>
                     
                     <div class="form-group">
                         <label class="form-label">University Certificate *</label>
@@ -273,6 +273,10 @@
                     </div>
                     <div id="todayAppointmentsList"></div>
                 </div>
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             </div>
 
             <!-- Calendar Page -->
@@ -308,6 +312,10 @@
                     </div>
                     <div id="appointmentsList"></div>
                 </div>
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             </div>
 
             <!-- Patients Page -->
@@ -350,6 +358,10 @@
                         <tbody id="patientsTableBody"></tbody>
                     </table>
                 </div>
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             </div>
 
             <!-- Profile Page -->
@@ -491,12 +503,12 @@
                     </div>
                     <div id="clinicsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
                 </div>
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             </div>
         </div>
-
-        <footer>
-            <p>© 2025 Clinic Management System - All Rights Reserved</p>
-        </footer>
     </div>
 
             <!-- Consultation Page (opened when doctor accepts an appointment) -->
@@ -547,14 +559,53 @@
                                     </div>
                                     <div id="selectedDiseases" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
                                 </div>
+                                <!-- Medications Section with Auto-Complete -->
                                 <div class="form-group">
-                                    <label class="form-label">Prescription</label>
-                                    <input type="text" class="form-input" id="consultationPrescription" placeholder="e.g. Amlodipine 5mg">
+                                    <label class="form-label">💊 Medications (Add & Configure)</label>
+                                    <div style="position:relative;margin-bottom:10px;">
+                                        <input 
+                                            type="text" 
+                                            class="form-input" 
+                                            id="consultationDrugSearch" 
+                                            placeholder="Search drug by name..." 
+                                            oninput="handleDrugSearch(this.value)"
+                                            autocomplete="off"
+                                        >
+                                        <div id="drugAutocomplete" style="position:absolute;top:100%;left:0;right:0;background:var(--bg-primary);border:1px solid var(--border-color);border-top:none;border-radius:0 0 10px 10px;max-height:200px;overflow-y:auto;display:none;z-index:1000;box-shadow:0 4px 12px var(--shadow);">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Selected Medications Display -->
+                                    <div id="selectedMedications" style="display:flex;flex-direction:column;gap:10px;"></div>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Notes</label>
                                     <textarea class="form-textarea" id="consultationNotes" placeholder="Clinical notes, recommendations..."></textarea>
                                 </div>
+                                
+                                <!-- Red Flag Symptoms Section -->
+                                <div class="form-group red-flag-section">
+                                    <label class="form-label red-flag-label">⚠️ Red Flag Symptoms (Dangerous/Unusual)</label>
+                                    <div style="position:relative;margin-bottom:10px;">
+                                        <input 
+                                            type="text" 
+                                            class="form-input" 
+                                            id="redFlagSymptomSearch" 
+                                            placeholder="Search symptom..." 
+                                            oninput="handleRedFlagSearch(this.value)"
+                                            autocomplete="off"
+                                        >
+                                        <div id="redFlagAutocomplete" style="position:absolute;top:100%;left:0;right:0;background:var(--bg-primary);border:1px solid var(--border-color);border-top:none;border-radius:0 0 10px 10px;max-height:200px;overflow-y:auto;display:none;z-index:1000;box-shadow:0 4px 12px var(--shadow);"></div>
+                                    </div>
+                                    <div id="selectedRedFlags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;"></div>
+                                    <textarea 
+                                        class="form-textarea red-flag-textarea" 
+                                        id="redFlagDescription" 
+                                        placeholder="Describe dangerous/unusual symptoms in detail..."
+                                        style="min-height:80px;border-color:#dc2626;background:rgba(220,38,38,0.05);"
+                                    ></textarea>
+                                </div>
+                                
                                 <div class="form-group">
                                     <label class="form-label">Patient Condition</label>
                                     <select class="form-select" id="consultationCondition">
@@ -572,6 +623,10 @@
                         </div>
                     </div>
                 </div>
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             </div>
 
             <!-- Patient Details Full Page -->
@@ -696,8 +751,8 @@
                         <label class="form-label">Gender *</label>
                         <select class="form-select" id="patientGender" required>
                             <option value="">-- Select --</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -741,20 +796,13 @@
                         <label class="form-label">Marital Status</label>
                         <select class="form-select" id="patientMarried">
                             <option value="">-- Select --</option>
-                            <option value="Single">Single</option>
-                            <option value="Married">Married</option>
-                            <option value="Divorced">Divorced</option>
-                            <option value="Widowed">Widowed</option>
+                            <option value="false">Single</option>
+                            <option value="true">Married</option>
                         </select>
                     </div>
-                </div>
-
-                <!-- Medical Information Section -->
-                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Information</h4>
-                <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Blood Type</label>
-                        <select class="form-select" id="patientBloodType">
+                        <select class="form-select" id="patientBloodtype">
                             <option value="">-- Select --</option>
                             <option value="O+">O+</option>
                             <option value="O-">O-</option>
@@ -766,13 +814,18 @@
                             <option value="AB-">AB-</option>
                         </select>
                     </div>
+                </div>
+
+                <!-- Physical Measurements -->
+                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Physical Measurements</h4>
+                <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Residence Type</label>
-                        <select class="form-select" id="patientResidenceType">
-                            <option value="">-- Select --</option>
-                            <option value="Urban">Urban</option>
-                            <option value="Rural">Rural</option>
-                        </select>
+                        <label class="form-label">Height (cm)</label>
+                        <input type="number" class="form-input" id="patientHeight" placeholder="170" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" class="form-input" id="patientWeight" placeholder="70" min="0" step="0.1">
                     </div>
                 </div>
 
@@ -794,57 +847,6 @@
                             <input type="checkbox" id="patientAnaemia"> Anaemia
                         </label>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="patientChestPain"> Chest Pain
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="patientSodium"> Sodium Imbalance
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="patientPlatelets"> Platelet Disorder
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Medical Measurements -->
-                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Measurements</h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Glucose Level (mg/dL)</label>
-                        <input type="number" class="form-input" id="patientGlucose" placeholder="100" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Creatinine (mg/dL)</label>
-                        <input type="number" class="form-input" id="patientCreatinine" placeholder="1.0" min="0" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cholesterol (mg/dL)</label>
-                        <input type="number" class="form-input" id="patientCholesterol" placeholder="200" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">BMI</label>
-                        <input type="number" class="form-input" id="patientBMI" placeholder="25" min="0" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Resting BP (mmHg)</label>
-                        <input type="text" class="form-input" id="patientRestingBP" placeholder="120/80">
-                    </div>
-                </div>
-
-                <!-- Additional Notes -->
-                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Additional Information</h4>
-                <div class="form-group">
-                    <label class="form-label">Allergies</label>
-                    <textarea class="form-input" id="patientAllergies" placeholder="Penicillin, etc." rows="2" style="resize: vertical;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Additional Notes</label>
-                    <textarea class="form-input" id="patientNotes" placeholder="Any important medical information..." rows="2" style="resize: vertical;"></textarea>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
@@ -869,10 +871,6 @@
                 <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Personal Information</h4>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-input" id="editPatientName" required>
-                    </div>
-                    <div class="form-group">
                         <label class="form-label">Age *</label>
                         <input type="number" class="form-input" id="editPatientAge" min="1" max="150" required>
                     </div>
@@ -880,8 +878,8 @@
                         <label class="form-label">Gender *</label>
                         <select class="form-select" id="editPatientGender" required>
                             <option value="">-- Select --</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -925,11 +923,17 @@
                         <label class="form-label">Marital Status</label>
                         <select class="form-select" id="editPatientMarried">
                             <option value="">-- Select --</option>
-                            <option value="Single">Single</option>
-                            <option value="Married">Married</option>
-                            <option value="Divorced">Divorced</option>
-                            <option value="Widowed">Widowed</option>
+                            <option value="false">Single</option>
+                            <option value="true">Married</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Height (cm)</label>
+                        <input type="number" class="form-input" id="editPatientHeight" min="50" max="250">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" class="form-input" id="editPatientWeight" min="1" max="500" step="0.1">
                     </div>
                 </div>
 
@@ -938,7 +942,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Blood Type</label>
-                        <select class="form-select" id="editPatientBloodType">
+                        <select class="form-select" id="editPatientBloodtype">
                             <option value="">-- Select --</option>
                             <option value="O+">O+</option>
                             <option value="O-">O-</option>
@@ -948,14 +952,6 @@
                             <option value="B-">B-</option>
                             <option value="AB+">AB+</option>
                             <option value="AB-">AB-</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Residence Type</label>
-                        <select class="form-select" id="editPatientResidenceType">
-                            <option value="">-- Select --</option>
-                            <option value="Urban">Urban</option>
-                            <option value="Rural">Rural</option>
                         </select>
                     </div>
                 </div>
@@ -978,58 +974,10 @@
                             <input type="checkbox" id="editPatientAnaemia"> Anaemia
                         </label>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="editPatientChestPain"> Chest Pain
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="editPatientSodium"> Sodium Imbalance
-                        </label>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">
-                            <input type="checkbox" id="editPatientPlatelets"> Platelet Disorder
-                        </label>
-                    </div>
+
                 </div>
 
-                <!-- Medical Measurements -->
-                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Medical Measurements</h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Glucose Level (mg/dL)</label>
-                        <input type="number" class="form-input" id="editPatientGlucose" placeholder="100" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Creatinine (mg/dL)</label>
-                        <input type="number" class="form-input" id="editPatientCreatinine" placeholder="1.0" min="0" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Cholesterol (mg/dL)</label>
-                        <input type="number" class="form-input" id="editPatientCholesterol" placeholder="200" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">BMI</label>
-                        <input type="number" class="form-input" id="editPatientBMI" placeholder="25" min="0" step="0.1">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Resting BP (mmHg)</label>
-                        <input type="text" class="form-input" id="editPatientRestingBP" placeholder="120/80">
-                    </div>
-                </div>
 
-                <!-- Additional Notes -->
-                <h4 style="color: var(--primary); margin: 20px 0 15px; font-weight: 600;">Additional Information</h4>
-                <div class="form-group">
-                    <label class="form-label">Allergies</label>
-                    <textarea class="form-input" id="editPatientAllergies" placeholder="Penicillin, etc." rows="2" style="resize: vertical;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Additional Notes</label>
-                    <textarea class="form-input" id="editPatientNotes" placeholder="Any important medical information..." rows="2" style="resize: vertical;"></textarea>
-                </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('editPatientModal')">Cancel</button>
@@ -1293,6 +1241,9 @@
 
 <!-- 8. Diseases Data: قائمة الأمراض + searchDiseases -->
 <script src="js/diseasesData.js"></script>
+
+<!-- 8b. Drugs Data: قائمة الأدوية حسب التخصص -->
+<script src="js/drugsdata.js"></script>
 
 <!-- 9. Consultation: تشخيص المرض، selectDiseases، saveConsultation -->
 <script src="js/consultation.js"></script>

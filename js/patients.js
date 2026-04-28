@@ -18,43 +18,36 @@ function savePatient(e) {
             const medicalHistory = {
                 hypertension: document.getElementById('patientHypertension')?.checked || false,
                 diabetes: document.getElementById('patientDiabetes')?.checked || false,
-                anaemia: document.getElementById('patientAnaemia')?.checked || false,
-                chestPain: document.getElementById('patientChestPain')?.checked || false,
-                sodium: document.getElementById('patientSodium')?.checked || false,
-                platelets: document.getElementById('patientPlatelets')?.checked || false
+                anaemia: document.getElementById('patientAnaemia')?.checked || false
             };
 
-            // Get medical measurements
-            const glucose = document.getElementById('patientGlucose').value ? parseFloat(document.getElementById('patientGlucose').value) : null;
-            const creatinine = document.getElementById('patientCreatinine').value ? parseFloat(document.getElementById('patientCreatinine').value) : null;
-            const cholesterol = document.getElementById('patientCholesterol').value ? parseFloat(document.getElementById('patientCholesterol').value) : null;
-            const bmi = document.getElementById('patientBMI').value ? parseFloat(document.getElementById('patientBMI').value) : null;
-            const restingBP = document.getElementById('patientRestingBP').value;
-            const residenceType = document.getElementById('patientResidenceType').value;
+            // Get patient data
+            const age = parseInt(document.getElementById('patientAge').value);
+            const gender = document.getElementById('patientGender').value;
+            const phone = document.getElementById('patientPhone').value;
+            const city = document.getElementById('patientCity').value || '';
+            const married = document.getElementById('patientMarried').value === 'true' || false;
+            const bloodtype = document.getElementById('patientBloodtype').value || '';
+            const height = document.getElementById('patientHeight').value ? parseFloat(document.getElementById('patientHeight').value) : null;
+            const weight = document.getElementById('patientWeight').value ? parseFloat(document.getElementById('patientWeight').value) : null;
 
             const patient = {
                 id: 'P' + String(patients.length + 1).padStart(3, '0'),
-                name: document.getElementById('patientName').value,
-                age: parseInt(document.getElementById('patientAge').value),
-                gender: document.getElementById('patientGender').value,
-                phone: document.getElementById('patientPhone').value,
-                city: document.getElementById('patientCity').value || '',
-                married: document.getElementById('patientMarried').value || '',
-                bloodType: document.getElementById('patientBloodType').value || '',
-                allergies: document.getElementById('patientAllergies').value || 'None',
-                chronic: document.getElementById('patientNotes').value || 'None', // Keep for backward compatibility
+                name: `Patient_${phone}`, // Generate name from phone
+                patientAge: age,
+                patientGender: gender,
+                patientPhone: phone,
+                patientCity: city,
+                patientMarried: married,
+                patientBloodtype: bloodtype,
+                patientHeight: height,
+                patientWeight: weight,
+                patientHypertension: medicalHistory.hypertension,
+                patientDiabetes: medicalHistory.diabetes,
+                patientAnaemia: medicalHistory.anaemia,
                 lastVisit: new Date().toISOString().split('T')[0],
-                notes: document.getElementById('patientNotes').value,
                 visits: [],
-                medicalHistory: medicalHistory,
-                measurements: {
-                    glucose: glucose,
-                    creatinine: creatinine,
-                    cholesterol: cholesterol,
-                    bmi: bmi,
-                    restingBP: restingBP,
-                    residenceType: residenceType
-                }
+                medicalHistory: medicalHistory
             };
             
             patients.push(patient);
@@ -64,7 +57,7 @@ function savePatient(e) {
             if (form) form.reset();
             // Uncheck all checkboxes
             document.querySelectorAll('#patientForm input[type="checkbox"]').forEach(cb => cb.checked = false);
-            showToast(`Patient ${patient.name} added successfully!`, 'success');
+            showToast(`Patient added successfully!`, 'success');
             updateAllData();
         }
         // Modal Functions
@@ -81,8 +74,9 @@ function savePatient(e) {
         // Delete Patient
         function deletePatient(id) {
             if (confirm('Are you sure you want to delete this patient? All their data will be removed!')) {
-                patients = patients.filter(p => p.id !== id);
-                appointments = appointments.filter(a => a.patientId !== id);
+                const deleteId = String(id);
+                patients = patients.filter(p => String(p.id) !== deleteId);
+                appointments = appointments.filter(a => String(a.patientId) !== deleteId);
                 showToast('Patient deleted successfully!', 'warning');
                 updateAllData();
             }
@@ -91,50 +85,34 @@ function savePatient(e) {
         function saveEditedPatient(e) {
             e.preventDefault();
             
-            const patientId = document.getElementById('editPatientId').value;
-            const patient = patients.find(p => p.id === patientId);
+            const patientId = String(document.getElementById('editPatientId').value);
+            const patient = patients.find(p => String(p.id) === patientId);
             if (!patient) return;
 
             // Update basic information
-            patient.name = document.getElementById('editPatientName').value;
-            patient.age = parseInt(document.getElementById('editPatientAge').value);
-            patient.gender = document.getElementById('editPatientGender').value;
-            patient.phone = document.getElementById('editPatientPhone').value;
-            patient.city = document.getElementById('editPatientCity').value;
-            patient.married = document.getElementById('editPatientMarried').value;
-            patient.bloodType = document.getElementById('editPatientBloodType').value;
+            patient.patientAge = parseInt(document.getElementById('editPatientAge').value);
+            patient.patientGender = document.getElementById('editPatientGender').value;
+            patient.patientPhone = document.getElementById('editPatientPhone').value;
+            patient.patientCity = document.getElementById('editPatientCity').value;
+            patient.patientMarried = document.getElementById('editPatientMarried').value === 'true' || false;
+            patient.patientBloodtype = document.getElementById('editPatientBloodtype').value;
+            
+            // Update height and weight from API data
+            const heightField = document.getElementById('editPatientHeight');
+            const weightField = document.getElementById('editPatientWeight');
+            if (heightField && heightField.value) patient.patientHeight = parseFloat(heightField.value);
+            if (weightField && weightField.value) patient.patientWeight = parseFloat(weightField.value);
 
             // Update medical history
             patient.medicalHistory = {
                 hypertension: document.getElementById('editPatientHypertension').checked,
                 diabetes: document.getElementById('editPatientDiabetes').checked,
-                anaemia: document.getElementById('editPatientAnaemia').checked,
-                chestPain: document.getElementById('editPatientChestPain').checked,
-                sodium: document.getElementById('editPatientSodium').checked,
-                platelets: document.getElementById('editPatientPlatelets').checked
+                anaemia: document.getElementById('editPatientAnaemia').checked
             };
-
-            // Update medical measurements
-            const glucose = document.getElementById('editPatientGlucose').value ? parseFloat(document.getElementById('editPatientGlucose').value) : null;
-            const creatinine = document.getElementById('editPatientCreatinine').value ? parseFloat(document.getElementById('editPatientCreatinine').value) : null;
-            const cholesterol = document.getElementById('editPatientCholesterol').value ? parseFloat(document.getElementById('editPatientCholesterol').value) : null;
-            const bmi = document.getElementById('editPatientBMI').value ? parseFloat(document.getElementById('editPatientBMI').value) : null;
-            const restingBP = document.getElementById('editPatientRestingBP').value;
-            const residenceType = document.getElementById('editPatientResidenceType').value;
-
-            patient.measurements = {
-                glucose: glucose,
-                creatinine: creatinine,
-                cholesterol: cholesterol,
-                bmi: bmi,
-                restingBP: restingBP,
-                residenceType: residenceType
-            };
-
-            // Update allergies and notes
-            patient.allergies = document.getElementById('editPatientAllergies').value || 'None';
-            patient.notes = document.getElementById('editPatientNotes').value;
-            patient.chronic = document.getElementById('editPatientNotes').value; // Keep for backward compatibility
+            
+            patient.patientHypertension = patient.medicalHistory.hypertension;
+            patient.patientDiabetes = patient.medicalHistory.diabetes;
+            patient.patientAnaemia = patient.medicalHistory.anaemia;
 
             // Close modal and show success message
             closeModal('editPatientModal');
@@ -146,7 +124,7 @@ function savePatient(e) {
 
         // Show Patient Details (Full Page)
         function showPatientDetails(id) {
-            const patient = patients.find(p => p.id === id);
+            const patient = patients.find(p => String(p.id) === String(id));
             if (!patient) return;
             openPatientPage(id);
         }
@@ -196,54 +174,42 @@ function savePatient(e) {
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
                     <div style="background: #fee2e2; padding: 20px; border-radius: 15px; border: 2px solid #fca5a5;">
-                        <h4 style="color: #991b1b; font-weight: 700; margin-bottom: 10px;">❤️ Allergies</h4>
-                        <p style="color: #7f1d1d; font-weight: 600;">${patient.allergies || 'None'}</p>
+                        <h4 style="color: #991b1b; font-weight: 700; margin-bottom: 10px;">📏 Physical Measurements</h4>
+                        <p style="color: #7f1d1d; font-weight: 600;">
+                            <strong>Height:</strong> ${patient.height ? patient.height + ' cm' : '-'}<br>
+                            <strong>Weight:</strong> ${patient.weight ? patient.weight + ' kg' : '-'}
+                        </p>
                     </div>
-                    ${patient.city || patient.married ? `
-                        <div style="background: #dbeafe; padding: 20px; border-radius: 15px; border: 2px solid #93c5fd;">
-                            <h4 style="color: #1e40af; font-weight: 700; margin-bottom: 10px;">📍 Personal Info</h4>
-                            <p style="color: #1e3a8a; font-weight: 600;"><strong>City:</strong> ${patient.city || '-'}<br><strong>Status:</strong> ${patient.married || '-'}</p>
-                        </div>
-                    ` : ''}
+                    <div style="background: #dbeafe; padding: 20px; border-radius: 15px; border: 2px solid #93c5fd;">
+                        <h4 style="color: #1e40af; font-weight: 700; margin-bottom: 10px;">💍 Personal Info</h4>
+                        <p style="color: #1e3a8a; font-weight: 600;">
+                            <strong>City:</strong> ${patient.city || '-'}<br>
+                            <strong>Status:</strong> ${patient.married ? (typeof patient.married === 'string' ? patient.married : 'Married') : 'Single'}
+                        </p>
+                    </div>
                 </div>
             `;
 
-            // Medical History Section
-            if (patient.medicalHistory && Object.values(patient.medicalHistory).some(v => v)) {
-                const conditions = [];
-                if (patient.medicalHistory.hypertension) conditions.push('🏥 Hypertension');
-                if (patient.medicalHistory.diabetes) conditions.push('🍬 Diabetes');
-                if (patient.medicalHistory.anaemia) conditions.push('🩸 Anaemia');
-                if (patient.medicalHistory.chestPain) conditions.push('💔 Chest Pain');
-                if (patient.medicalHistory.sodium) conditions.push('⚗️ Sodium Imbalance');
-                if (patient.medicalHistory.platelets) conditions.push('🔴 Platelet Disorder');
-
-                content += `
-                    <div style="background: #fee2e2; padding: 20px; border-radius: 15px; border: 2px solid #fca5a5; margin-bottom: 25px;">
-                        <h4 style="color: #991b1b; font-weight: 700; margin-bottom: 15px;">⚠️ Medical History</h4>
-                        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                            ${conditions.map(c => `<span style="background: #fecaca; color: #991b1b; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${c}</span>`).join('')}
-                        </div>
+            // Health Conditions Section
+            content += `
+                <div style="background: #fef3c7; padding: 20px; border-radius: 15px; border: 2px solid #fcd34d; margin-bottom: 25px;">
+                    <h4 style="color: #92400e; font-weight: 700; margin-bottom: 15px;">⚕️ Health Conditions</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #92400e; font-weight: 600;">
+                            <input type="checkbox" ${patient.medicalHistory?.hypertension ? 'checked' : ''} disabled style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>🏥 Hypertension</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #92400e; font-weight: 600;">
+                            <input type="checkbox" ${patient.medicalHistory?.diabetes ? 'checked' : ''} disabled style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>🍬 Diabetes</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #92400e; font-weight: 600;">
+                            <input type="checkbox" ${patient.medicalHistory?.anaemia ? 'checked' : ''} disabled style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>🩸 Anaemia</span>
+                        </label>
                     </div>
-                `;
-            }
-
-            // Medical Measurements Section
-            if (patient.measurements && Object.values(patient.measurements).some(v => v)) {
-                content += `
-                    <div style="background: var(--bg-tertiary); padding: 20px; border-radius: 15px; margin-bottom: 25px;">
-                        <h4 style="font-weight: 700; margin-bottom: 15px; color: var(--text-primary);">📊 Latest Medical Measurements</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                            ${patient.measurements.glucose ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>Glucose:</strong> ${patient.measurements.glucose} mg/dL</div>` : ''}
-                            ${patient.measurements.cholesterol ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>Cholesterol:</strong> ${patient.measurements.cholesterol} mg/dL</div>` : ''}
-                            ${patient.measurements.bmi ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>BMI:</strong> ${patient.measurements.bmi}</div>` : ''}
-                            ${patient.measurements.restingBP ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>Resting BP:</strong> ${patient.measurements.restingBP}</div>` : ''}
-                            ${patient.measurements.creatinine ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>Creatinine:</strong> ${patient.measurements.creatinine} mg/dL</div>` : ''}
-                            ${patient.measurements.residenceType ? `<div style="background: var(--bg-primary); padding: 12px; border-radius: 8px;"><strong>Residence:</strong> ${patient.measurements.residenceType}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            }
+                </div>
+            `;
 
             // Medical History/Visits Section
             content += `
@@ -279,6 +245,10 @@ function savePatient(e) {
                         `).join('')}
                     </div>
                 ` : '<p style="text-align: center; color: var(--text-secondary); padding: 40px;">No previous visits</p>'}
+                
+                <footer style="text-align: center; padding: 30px 20px; color: var(--text-secondary); border-top: 1px solid var(--border-color); margin-top: 40px;">
+                    <p>© 2025 Clinic Management System - All Rights Reserved</p>
+                </footer>
             `;
             
             document.getElementById('patientDetailsPageContent').innerHTML = content;
@@ -332,7 +302,7 @@ function savePatient(e) {
             
             const filtered = patients.filter(p => 
                 p.name.toLowerCase().includes(searchTerm) ||
-                p.id.toLowerCase().includes(searchTerm) ||
+                String(p.id).toLowerCase().includes(searchTerm) ||
                 p.phone.includes(searchTerm)
             );
             
@@ -369,8 +339,11 @@ function savePatient(e) {
         }
               // Show Edit Patient Modal
         function showEditPatientModal(patientId) {
-            const patient = patients.find(p => p.id === patientId);
-            if (!patient) return;
+            const patient = patients.find(p => String(p.id) === String(patientId));
+            if (!patient) {
+                console.error("Patient not found:", patientId);
+                return;
+            }
 
             // Store patient ID in hidden input
             document.getElementById('editPatientId').value = patientId;
@@ -378,45 +351,81 @@ function savePatient(e) {
             // First, uncheck ALL checkboxes in edit form
             document.querySelectorAll('#editPatientForm input[type="checkbox"]').forEach(cb => cb.checked = false);
             
-            // First, clear ALL measurement fields
-            document.getElementById('editPatientGlucose').value = '';
-            document.getElementById('editPatientCreatinine').value = '';
-            document.getElementById('editPatientCholesterol').value = '';
-            document.getElementById('editPatientBMI').value = '';
-            document.getElementById('editPatientRestingBP').value = '';
+            // Clear ALL measurement fields safely
+            const fieldsToClear = [
+                'editPatientGlucose', 'editPatientCreatinine', 'editPatientCholesterol',
+                'editPatientBMI', 'editPatientRestingBP', 'editPatientHeight', 'editPatientWeight'
+            ];
+            fieldsToClear.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) field.value = '';
+            });
 
             // Populate basic fields
-            document.getElementById('editPatientName').value = patient.name || '';
-            document.getElementById('editPatientAge').value = patient.age || '';
-            document.getElementById('editPatientGender').value = patient.gender || '';
-            document.getElementById('editPatientPhone').value = patient.phone || '';
-            document.getElementById('editPatientCity').value = patient.city || '';
-            document.getElementById('editPatientMarried').value = patient.married || '';
-            document.getElementById('editPatientBloodType').value = patient.bloodType || '';
-            document.getElementById('editPatientResidenceType').value = patient.measurements?.residenceType || '';
+            const basicFields = {
+                'editPatientName': 'name',
+                'editPatientAge': 'age',
+                'editPatientGender': 'gender',
+                'editPatientPhone': 'phone',
+                'editPatientCity': 'city',
+                'editPatientMarried': 'married',
+                'editPatientBloodType': 'bloodType',
+                'editPatientHeight': 'height',
+                'editPatientWeight': 'weight'
+            };
+
+            Object.keys(basicFields).forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.value = patient[basicFields[fieldId]] || '';
+                }
+            });
 
             // Populate medical history checkboxes
             if (patient.medicalHistory) {
-                document.getElementById('editPatientHypertension').checked = patient.medicalHistory.hypertension || false;
-                document.getElementById('editPatientDiabetes').checked = patient.medicalHistory.diabetes || false;
-                document.getElementById('editPatientAnaemia').checked = patient.medicalHistory.anaemia || false;
-                document.getElementById('editPatientChestPain').checked = patient.medicalHistory.chestPain || false;
-                document.getElementById('editPatientSodium').checked = patient.medicalHistory.sodium || false;
-                document.getElementById('editPatientPlatelets').checked = patient.medicalHistory.platelets || false;
+                const historyFields = {
+                    'editPatientHypertension': 'hypertension',
+                    'editPatientDiabetes': 'diabetes',
+                    'editPatientAnaemia': 'anaemia',
+                    'editPatientChestPain': 'chestPain',
+                    'editPatientSodium': 'sodium',
+                    'editPatientPlatelets': 'platelets'
+                };
+
+                Object.keys(historyFields).forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.checked = patient.medicalHistory[historyFields[fieldId]] || false;
+                    }
+                });
             }
 
-            // Now populate medical measurements
+            // Now populate medical measurements (only if they exist)
             if (patient.measurements) {
-                document.getElementById('editPatientGlucose').value = patient.measurements.glucose || '';
-                document.getElementById('editPatientCreatinine').value = patient.measurements.creatinine || '';
-                document.getElementById('editPatientCholesterol').value = patient.measurements.cholesterol || '';
-                document.getElementById('editPatientBMI').value = patient.measurements.bmi || '';
-                document.getElementById('editPatientRestingBP').value = patient.measurements.restingBP || '';
+                const measurementFields = {
+                    'editPatientGlucose': 'glucose',
+                    'editPatientCreatinine': 'creatinine',
+                    'editPatientCholesterol': 'cholesterol',
+                    'editPatientBMI': 'bmi',
+                    'editPatientRestingBP': 'restingBP'
+                };
+
+                Object.keys(measurementFields).forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field && patient.measurements[measurementFields[fieldId]]) {
+                        field.value = patient.measurements[measurementFields[fieldId]];
+                    }
+                });
             }
 
             // Populate allergies and notes
-            document.getElementById('editPatientAllergies').value = patient.allergies || '';
-            document.getElementById('editPatientNotes').value = patient.notes || '';
+            const allergy = document.getElementById('editPatientAllergies');
+            const notes = document.getElementById('editPatientNotes');
+            const residence = document.getElementById('editPatientResidenceType');
+            
+            if (allergy) allergy.value = patient.allergies || '';
+            if (notes) notes.value = patient.notes || '';
+            if (residence) residence.value = patient.measurements?.residenceType || '';
 
             // Open modal
             openModal('editPatientModal');

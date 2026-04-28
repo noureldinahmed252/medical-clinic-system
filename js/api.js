@@ -2,7 +2,7 @@
 // API Configuration & Service
 // ========================
 
-const BASE_URL = "https://expansively-nuciform-saran.ngrok-free.dev";
+const BASE_URL = "https://osamarabea-001-site1.jtempurl.com";
 
 // Generic API Request Handler
 async function apiRequest(endpoint, method = "GET", body = null) {
@@ -15,7 +15,7 @@ async function apiRequest(endpoint, method = "GET", body = null) {
             method: method,
             headers: {
                 "Content-Type": "application/json",
-                "ngrok-skip-browser-warning": "true",
+                
                 ...(token && { Authorization: "Bearer " + token })
             },
             body: body ? JSON.stringify(body) : null
@@ -145,7 +145,7 @@ async function apiSignup(signupData) {
         const response = await fetch(BASE_URL + "/api/auth/doctor/register", {
             method: "POST",
             headers: {
-                "ngrok-skip-browser-warning": "true"
+            
                 // NOTE: Don't set Content-Type header, let browser set it with boundary for multipart/form-data
             },
             body: formData
@@ -237,7 +237,7 @@ async function apiSignupWithPhoto(formData) {
         const response = await fetch(BASE_URL + "/api/auth/doctor/register", {
             method: "POST",
             headers: {
-                "ngrok-skip-browser-warning": "true"
+        
                 // NOTE: Don't set Content-Type header, let browser set it with boundary
                 // NOTE: No Authorization header - registration is public
             },
@@ -370,7 +370,7 @@ async function apiUpdateProfile(doctorId, formData) {
             requestConfig = {
                 method: "PUT",
                 headers: {
-                    "ngrok-skip-browser-warning": "true",
+            
                     ...(token && { Authorization: "Bearer " + token })
                     // Don't set Content-Type for multipart/form-data
                 },
@@ -395,7 +395,7 @@ async function apiUpdateProfile(doctorId, formData) {
             requestConfig = {
                 method: "PUT",
                 headers: {
-                    "ngrok-skip-browser-warning": "true",
+          
                     "Content-Type": "application/json",
                     ...(token && { Authorization: "Bearer " + token })
                 },
@@ -644,7 +644,7 @@ async function getDoctorImage(doctorId) {
         const response = await fetch(`${BASE_URL}/api/DoctorProfile/${doctorId}/image`, {
             method: "GET",
             headers: {
-                "ngrok-skip-browser-warning": "true"
+
             }
         });
         
@@ -688,7 +688,7 @@ async function uploadDoctorProfileImage(doctorId, imageFile) {
         const response = await fetch(`${BASE_URL}/api/DoctorProfile/${doctorId}/image`, {
             method: "POST",
             headers: {
-                "ngrok-skip-browser-warning": "true",
+    
                 ...(token && { Authorization: "Bearer " + token })
                 // Don't set Content-Type, let browser set it with boundary
             },

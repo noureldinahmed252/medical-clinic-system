@@ -3,8 +3,8 @@
         function saveAppointment(e) {
             e.preventDefault();
             const appointment = {
-                id: appointments.length + 1,
-                patientId: document.getElementById('appointmentPatient').value,
+                id: String(appointments.length + 1),
+                patientId: String(document.getElementById('appointmentPatient').value),
                 date: document.getElementById('appointmentDate').value,
                 time: document.getElementById('appointmentTime').value,
                 status: document.getElementById('appointmentStatus').value,
@@ -20,10 +20,10 @@
 
         // Edit Appointment
         function editAppointment(id) {
-            const apt = appointments.find(a => a.id === id);
+            const apt = appointments.find(a => String(a.id) === String(id));
             if (!apt) return;
             
-            const patient = patients.find(p => p.id === apt.patientId);
+            const patient = patients.find(p => String(p.id) === String(apt.patientId));
             
             document.getElementById('editAppointmentId').value = id;
             document.getElementById('editAppointmentPatientName').value = patient ? patient.name : 'Unknown';
@@ -38,8 +38,8 @@
         // Update Appointment
         function updateAppointment(e) {
             e.preventDefault();
-            const id = parseInt(document.getElementById('editAppointmentId').value);
-            const apt = appointments.find(a => a.id === id);
+            const id = String(document.getElementById('editAppointmentId').value);
+            const apt = appointments.find(a => String(a.id) === id);
             
             if (apt) {
                 apt.date = document.getElementById('editAppointmentDate').value;
@@ -56,7 +56,8 @@
         // Delete Appointment
         function deleteAppointment(id) {
             if (confirm('Are you sure you want to delete this appointment?')) {
-                appointments = appointments.filter(a => a.id !== id);
+                const deleteId = String(id);
+                appointments = appointments.filter(a => String(a.id) !== deleteId);
                 showToast('Appointment deleted successfully!', 'success');
                 updateAllData();
             }
@@ -81,7 +82,7 @@
             }
             
             container.innerHTML = dayAppointments.map(apt => {
-                const patient = patients.find(p => p.id === apt.patientId);
+                const patient = patients.find(p => String(p.id) === String(apt.patientId));
                 const statusClass = apt.status === 'confirmed' ? 'appointment-confirmed' : 'appointment-pending';
                 
                 return `
@@ -226,7 +227,7 @@
                 list.innerHTML = '<div class="empty-state"><p>No appointments today</p></div>';
             } else {
                 list.innerHTML = todayAppts.map(apt => {
-                    const patient = patients.find(p => p.id === apt.patientId);
+                    const patient = patients.find(p => String(p.id) === String(apt.patientId));
                     const statusClass = apt.status === 'confirmed' ? 'appointment-confirmed' : 'appointment-pending';
                     
                     return `
@@ -262,7 +263,7 @@
 
         // Confirm Appointment
         function confirmAppointment(id) {
-            const apt = appointments.find(a => a.id === id);
+            const apt = appointments.find(a => String(a.id) === String(id));
             if (apt) {
                 apt.status = 'confirmed';
                 showToast('Appointment confirmed!', 'success');

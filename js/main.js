@@ -26,62 +26,10 @@
 
         // Initialize
         function loadDefaultData() {
-            const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0];
-            const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0];
-            
-            patients = [
-                {
-                    id: 'P001',
-                    name: 'Mohamed Ali Hassan',
-                    age: 45,
-                    gender: 'Male',
-                    phone: '+20 111 111 1111',
-                    bloodType: 'A+',
-                    allergies: 'Penicillin',
-                    chronic: 'Hypertension',
-                    lastVisit: today,
-                    notes: 'Regular patient',
-                    visits: [
-                        { date: today, diagnosis: 'High Blood Pressure', prescription: 'Amlodipine 5mg', notes: 'Follow up in 2 weeks' }
-                    ]
-                },
-                {
-                    id: 'P002',
-                    name: 'Fatima Hassan Mahmoud',
-                    age: 32,
-                    gender: 'Female',
-                    phone: '+20 122 222 2222',
-                    bloodType: 'O+',
-                    allergies: 'None',
-                    chronic: 'None',
-                    lastVisit: yesterday,
-                    notes: '',
-                    visits: [
-                        { date: yesterday, diagnosis: 'Sore Throat', prescription: 'Amoxicillin 500mg', notes: 'Rest and warm fluids' }
-                    ]
-                },
-                {
-                    id: 'P003',
-                    name: 'Khaled Said Ahmed',
-                    age: 58,
-                    gender: 'Male',
-                    phone: '+20 133 333 3333',
-                    bloodType: 'B+',
-                    allergies: 'Sulfa',
-                    chronic: 'Type 2 Diabetes',
-                    lastVisit: today,
-                    notes: 'Needs regular monitoring',
-                    visits: [
-                        { date: today, diagnosis: 'Diabetes Follow-up', prescription: 'Metformin 1000mg', notes: 'HbA1c 7.2%' }
-                    ]
-                }
-            ];
-
-            // Initialize empty arrays for API data (appointments will be loaded from API)
-            // Do NOT initialize dummy appointments here when using API
-            // Only keep dummy patients for reference
-            console.log("✅ Default data structure initialized (patients only)");
+            // Initialize empty arrays for API data
+            patients = [];
+            appointments = [];
+            console.log("✅ Default data structure initialized (ready for API data)");
         }
 // Update All Data
         function updateAllData() {
@@ -93,7 +41,6 @@
 
         // Initialize
        window.addEventListener('DOMContentLoaded', function () {
-
     const token = localStorage.getItem("authToken");
     const savedDoctorId = localStorage.getItem("doctorId");
 
@@ -111,7 +58,7 @@
         // اظهار التطبيق
         document.getElementById('mainApp')?.classList.remove('hidden');
 
-        // تحميل البيانات من API مباشرة (بدون بيانات وهمية)
+        // تحميل البيانات من API
         console.log("📡 Loading profile from API...");
         getProfileData(doctorProfile.doctorId)
             .then(profileData => {
@@ -142,7 +89,7 @@
 
                 console.log("✅ Doctor profile updated");
 
-                // Load default data structure ONLY (no mock data)
+                // Load default data structure
                 loadDefaultData();
                 renderClinics();
                 
@@ -165,15 +112,27 @@
                                 patient = {
                                     id: `API_P${apt.appointmentId}`,
                                     name: patientName,
-                                    age: 0,
-                                    gender: 'Unknown',
-                                    phone: '',
-                                    bloodType: 'Unknown',
+                                    age: apt.patientAge || 0,
+                                    gender: apt.patientGender || 'Unknown',
+                                    phone: apt.patientPhone || '',
+                                    city: apt.patientCity || '',
+                                    married: apt.patientMarried || false,
+                                    bloodType: apt.patientBloodtype || 'Unknown',
+                                    height: apt.patientHeight || null,
+                                    weight: apt.patientWeight || null,
                                     allergies: 'None',
                                     chronic: 'None',
                                     lastVisit: apt.appointmentDate,
                                     notes: `Patient from appointment ID: ${apt.appointmentId}`,
-                                    visits: []
+                                    visits: [],
+                                    medicalHistory: {
+                                        hypertension: apt.patientHypertension || false,
+                                        diabetes: apt.patientDiabetes || false,
+                                        anaemia: apt.patientAnaemia || false,
+                                        chestPain: false,
+                                        sodium: false,
+                                        platelets: false
+                                    }
                                 };
                                 patients.push(patient);
                                 console.log("✨ New patient created:", patient);
@@ -201,7 +160,6 @@
                     })
                     .catch(error => {
                         console.error("⚠️ Failed to fetch appointments from API:", error);
-                        // Keep using mock data if API fails
                         updateAllData();
                     });
 

@@ -137,7 +137,7 @@ Cardiology: [
     { name: "Pericardial Effusion", severity: "moderate" }
   ],
 
-ENT: [
+"ENT (Ear, Nose, and Throat)": [
 { name: "Otitis Media", severity: "acute" },
 { name: "Chronic Otitis Media", severity: "chronic" },
 { name: "Otitis Externa", severity: "acute" },

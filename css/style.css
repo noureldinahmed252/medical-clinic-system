@@ -1198,6 +1198,335 @@
             background: rgba(255, 255, 255, 0.5);
         }
 
+        /* ========================
+           Red Flag Symptoms - Danger/Alert Styles
+           ======================== */
+        .red-flag-section {
+            background: rgba(220, 38, 38, 0.08) !important;
+            border: 2px solid #dc2626 !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.1) inset;
+        }
+
+        .red-flag-label {
+            color: #dc2626 !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .red-flag-textarea {
+            border-color: #dc2626 !important;
+            border-width: 2px !important;
+            background: rgba(220, 38, 38, 0.03) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .red-flag-textarea:focus {
+            outline: none !important;
+            border-color: #991b1b !important;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+        }
+
+        .red-flag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            animation: slideIn 0.2s ease;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+        }
+
+        .red-flag-badge-close {
+            background: rgba(255, 255, 255, 0.35);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .red-flag-badge-close:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .red-flag-autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--bg-secondary);
+            transition: all 0.15s ease;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .red-flag-autocomplete-item:hover {
+            background: rgba(220, 38, 38, 0.08);
+            padding-left: 18px;
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .red-flag-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .red-flag-category {
+            font-size: 10px;
+            font-weight: 600;
+            color: #dc2626;
+            background: rgba(220, 38, 38, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* ========================
+           Medication Card - Collapsed/Expandable
+           ======================== */
+        .medication-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            animation: slideIn 0.2s ease;
+            transition: all 0.2s;
+        }
+
+        .medication-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.08);
+        }
+
+        /* ===== COLLAPSED VIEW ===== */
+        .med-collapsed {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .med-collapsed:hover {
+            background: var(--bg-secondary);
+        }
+
+        .med-collapsed-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .med-collapsed-info strong {
+            font-size: 13px;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .med-collapsed-details {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .med-collapsed-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: 10px;
+        }
+
+        .med-quick-info {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            background: var(--bg-secondary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .med-toggle-arrow {
+            color: var(--text-secondary);
+            font-size: 12px;
+            transition: transform 0.2s;
+            display: inline-block;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* ===== EXPANDED VIEW ===== */
+        .med-expanded {
+            padding: 12px;
+            border-top: 1px solid var(--bg-secondary);
+            background: var(--bg-secondary);
+            animation: slideDown 0.2s ease;
+        }
+
+        .med-expanded.hidden {
+            display: none;
+        }
+
+        .med-fields-compact {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .med-fields-compact {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .med-field-inline {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .med-field-inline label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .med-field-inline input,
+        .med-field-inline select {
+            font-size: 12px;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .med-field-inline input:focus,
+        .med-field-inline select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 3px rgba(30, 64, 175, 0.2);
+        }
+
+        .med-field-inline input[readonly] {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: not-allowed;
+        }
+
+        /* ===== EXPANDED FOOTER ===== */
+        .med-expanded-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .med-expanded-summary {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .medication-remove-compact {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .medication-remove-compact:hover {
+            background: linear-gradient(135deg, #991b1b 0%, #7c1d1d 100%);
+            transform: scale(1.05);
+        }
+
+        .medication-remove-compact:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 500px;
+            }
+        }
+
+        .drug-autocomplete-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--bg-secondary);
+            transition: background 0.15s ease;
+            font-size: 12px;
+        }
+
+        .drug-autocomplete-item:hover {
+            background: var(--bg-secondary);
+            padding-left: 16px;
+        }
+
+        .drug-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         footer {
             background: var(--bg-primary);
             border-top: 2px solid var(--border-color);
